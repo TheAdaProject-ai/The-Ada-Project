@@ -926,13 +926,13 @@
                             knowledgeBase[file.name] = content;
                             console.log('Loaded:', file.name, 'Size:', content.length);
                             
-                            // Parse Oxford English Dictionary
-                            if (file.name === 'Oxford English Dictionary.txt') {
+                            // Parse dictionary-common.txt
+                            if (file.name === 'dictionary-common.txt') {
                                 try {
                                     dictionary = parseOxfordDictionary(content);
-                                    console.log('Oxford Dictionary loaded with', Object.keys(dictionary).length, 'entries');
+                                    console.log('Dictionary loaded with', Object.keys(dictionary).length, 'entries');
                                 } catch (error) {
-                                    console.error('Error parsing Oxford dictionary:', error);
+                                    console.error('Error parsing dictionary:', error);
                                 }
                             }
                         } else {
@@ -960,6 +960,8 @@
             const parsed = {};
             const lines = content.split('\n');
             
+            console.log('Total lines:', lines.length);
+            
             for (const line of lines) {
                 const trimmed = line.trim();
                 if (!trimmed) continue;
@@ -968,7 +970,7 @@
                 if (trimmed.length <= 2 && /^[A-Za-z]+$/.test(trimmed)) continue;
                 
                 // Parse dictionary entry
-                // Format: Word  part-of-speech definition [etymology]
+                // Format: Word  part-of-speech definition
                 const match = trimmed.match(/^([A-Za-z\-]+)\s+(.+)$/);
                 if (match) {
                     const word = match[1].toLowerCase();
@@ -980,9 +982,12 @@
                         context: 'general',
                         response_templates: generateResponseTemplates(word, definition)
                     };
+                } else {
+                    console.log('Failed to match line:', trimmed.substring(0, 50));
                 }
             }
             
+            console.log('Parsed entries:', Object.keys(parsed).length);
             return parsed;
         }
         
@@ -1109,8 +1114,8 @@
             let relevantContent = [];
             
             for (const [fileName, content] of Object.entries(knowledgeBase)) {
-                // Skip Oxford dictionary for knowledge base search
-                if (fileName === 'Oxford English Dictionary.txt') continue;
+                // Skip dictionary files for knowledge base search
+                if (fileName === 'Oxford English Dictionary.txt' || fileName === 'dictionary-common.txt') continue;
                 
                 const lowerContent = content.toLowerCase();
                 
