@@ -1,60 +1,117 @@
-# Ada - Independent AI Assistant
+# Ada - AI Assistant with Multiple API Integrations
 
-Ada is a fully independent AI assistant that doesn't rely on external APIs like OpenAI, Anthropic, or GPT. She answers questions based on a knowledge base loaded from GitHub, making her completely self-contained and private.
+Ada is a powerful AI assistant that combines multiple free APIs to provide comprehensive information and services. She doesn't rely on paid AI services like OpenAI or Anthropic, making her completely free to use.
 
 ## Features
 
-- **💬 Chat Interface**: Clean, modern chat interface with Ada
+- **💬 Chat Interface**: Clean, modern chat interface with intelligent responses
+- **🔍 Multiple Search APIs**: Wikipedia, DuckDuckGo, Dictionary, Gutendex, and more
+- **🌤️ Weather Tab**: Current weather information via Open-Meteo API
+- **📰 News Tab**: Curated news from Actually Relevant API
+- **🎲 Facts Tab**: Random and daily facts from uselessfacts API
+- **🔎 Search Tab**: Web search via DuckDuckGo API
 - **📎 File Attachments**: Send images, videos, audio, and documents
 - **🎤 Speech-to-Text**: Speak your messages instead of typing
 - **🔊 Text-to-Speech**: Hear Ada speak her responses
 - **📚 Knowledge Base**: Load knowledge from GitHub repositories
 - **🔄 Auto-read**: Automatically have Ada read her responses
 - **🎨 Modern UI**: Beautiful gradient design with smooth animations
+- **📝 Professional Formatting**: Responses use professional clarity guidelines
+
+## API Integrations
+
+Ada integrates with the following free APIs:
+
+### Dictionary API
+- Word definitions and synonyms
+- Pronunciation and part of speech
+- Examples and usage
+- Source: [dictionaryapi.dev](https://dictionaryapi.dev/)
+
+### Gutendex API
+- Search for books from Project Gutenberg
+- Author information
+- Download counts
+- Subject categories
+- Source: [Gutendex](https://gutendex.com/)
+
+### MediaWiki REST API (Wikipedia)
+- Wikipedia article summaries
+- Fuzzy matching for misspelled names
+- Professional formatting
+- Source: [Wikipedia REST API](https://en.wikipedia.org/api/rest_v1/)
+
+### Open-Meteo Weather API
+- Current weather data
+- Temperature, wind speed, conditions
+- Global coverage with geocoding
+- Source: [Open-Meteo](https://open-meteo.com/)
+
+### Actually Relevant News API
+- Curated news stories
+- Humanitarian and important topics
+- No API key required
+- Source: [Actually Relevant](https://actuallyrelevant.news/)
+
+### Random Facts API
+- Random useless facts
+- Daily facts
+- Multiple languages
+- Source: [uselessfacts.jsph.pl](https://uselessfacts.jsph.pl/)
+
+### DuckDuckGo Search API
+- Web search capabilities
+- Instant answers
+- Related topics
+- Fallback when Wikipedia fails
+- Source: [DuckDuckGo](https://duckduckgo.com/)
 
 ## How It Works
 
-Ada uses a local knowledge base system that:
-1. Reads knowledge files from a GitHub repository
-2. Stores them locally in memory
-3. Uses keyword matching and pattern recognition to answer questions
-4. Generates responses from the most relevant content found
+Ada uses a multi-layered approach to answer questions:
 
-No external AI APIs are used - everything runs locally in your browser.
+1. **Greeting Detection**: Recognizes and responds to common greetings
+2. **Dictionary Lookup**: Checks for word definitions
+3. **Wikipedia Search**: Uses MediaWiki REST API with fuzzy matching
+4. **DuckDuckGo Fallback**: Searches the web if Wikipedia fails
+5. **Book Search**: Uses Gutendex for book-related queries
+6. **Professional Formatting**: Applies clarity guidelines to all responses
+
+No paid AI APIs are used - everything runs using free, public APIs.
 
 ## Setup
 
 1. Clone or download this repository
 2. Open `index.html` in a modern web browser (Chrome, Edge, Firefox, Safari)
-3. Ada will automatically load her knowledge base from the configured GitHub repository
-
-## Knowledge Base Setup
-
-Ada's knowledge base is configured in the code. To use your own knowledge base:
-
-1. Create a GitHub repository with your knowledge files
-2. Add `.md`, `.txt`, or `.json` files with your knowledge
-3. Update the `knowledgeToken` and `knowledgeRepo` variables in `index.html`:
-   ```javascript
-   let knowledgeToken = 'your_github_token';
-   let knowledgeRepo = 'owner/repository-name';
-   ```
-
-### Knowledge File Format
-
-Ada reads the following file types:
-- **Markdown (.md)**: Best for structured knowledge
-- **Text (.txt)**: Simple text files
-- **JSON (.json)**: Structured data
-
-Organize your knowledge in clear, well-structured documents for best results.
+3. Ada is ready to use immediately
 
 ## Usage
 
-### Basic Chat
-- Type your question in the input field
-- Press Enter or click "Send"
-- Ada will search her knowledge base and respond
+### Chat Tab
+- **Ask questions**: Type your question and press Enter
+- **Word definitions**: "Define serendipity" or "What does X mean?"
+- **Wikipedia queries**: "Who is Barack Obama?" or "What is quantum mechanics?"
+- **Book searches**: "Find books by Jane Austen" or "Search for Pride and Prejudice"
+- **Greeting responses**: "Hi", "Hello", "How are you?"
+
+### Weather Tab
+- Enter a city name (e.g., "London", "New York")
+- Click "Get Weather"
+- View current temperature, wind speed, and conditions
+
+### News Tab
+- Click "Load News"
+- View curated news stories from Actually Relevant
+- Read full articles via provided links
+
+### Facts Tab
+- Click "Get Random Fact" for a random useless fact
+- Click "Get Today's Fact" for today's featured fact
+
+### Search Tab
+- Enter any search query
+- Click "Search"
+- View DuckDuckGo search results with instant answers
 
 ### File Attachments
 - Click the paperclip icon
@@ -73,6 +130,26 @@ Organize your knowledge in clear, well-structured documents for best results.
 - Ada will speak her response
 - Enable "Auto-read Ada's messages" to hear all responses automatically
 
+## Knowledge Base Setup (Optional)
+
+Ada can load additional knowledge from GitHub repositories. To use this feature:
+
+1. Create a GitHub repository with your knowledge files
+2. Add `.md`, `.txt`, or `.json` files with your knowledge
+3. Click the "Knowledge Base Configuration" button in the UI
+4. Enter your GitHub Personal Access Token
+5. Enter your repository in the format `owner/repository-name`
+6. Click "Load Knowledge"
+
+### Knowledge File Format
+
+Ada reads the following file types:
+- **Markdown (.md)**: Best for structured knowledge
+- **Text (.txt)**: Simple text files
+- **JSON (.json)**: Structured data
+
+Organize your knowledge in clear, well-structured documents for best results.
+
 ## Browser Support
 
 - **Chrome/Edge**: Full support (including speech recognition)
@@ -81,10 +158,11 @@ Organize your knowledge in clear, well-structured documents for best results.
 
 ## Privacy
 
-- All processing happens locally in your browser
-- No external API calls to AI services
+- No external AI API calls to paid services
+- All search APIs are free and public
 - Knowledge is loaded from your GitHub repository
 - Token is stored locally in the page
+- No data is sent to AI companies
 
 ## Customization
 
@@ -106,19 +184,21 @@ Modify the `generateResponse()` function to customize how Ada answers questions.
 
 ## Limitations
 
-- Ada uses simple pattern matching, not advanced AI
-- Knowledge base must be well-structured for best results
+- Ada uses free public APIs, not advanced AI
+- Some APIs may have rate limits
 - Speech recognition requires Chrome/Edge
 - Knowledge base size limited by browser memory
+- Fuzzy matching may not always find the correct Wikipedia article
 
 ## Future Enhancements
 
-- [ ] Advanced pattern matching
+- [ ] Additional API integrations
 - [ ] Support for more file types
 - [ ] Local file-based knowledge base
 - [ ] Export/import knowledge base
 - [ ] Better sentence extraction
 - [ ] Multi-language support
+- [ ] Image recognition via file attachments
 
 ## License
 
@@ -135,11 +215,11 @@ Contributions are welcome! Feel free to:
 ## Support
 
 For issues or questions:
-1. Check the knowledge base files are properly formatted
-2. Verify GitHub token has read access to the repository
-3. Ensure browser is up to date
-4. Check browser console for errors
+1. Check the API endpoints are accessible
+2. Verify browser is up to date
+3. Check browser console for errors
+4. Ensure internet connection for API calls
 
 ---
 
-**Ada** - Your Independent AI Assistant 🤖
+**Ada** - Your Free AI Assistant 🤖
