@@ -647,6 +647,13 @@ async function fetchBooks(q){if(bookCache[q])return bookCache[q];try{const r=awa
 async function fetchWord(word){if(dictCache[word])return dictCache[word];try{const r=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);if(r.ok){const d=await r.json();dictCache[word]=d;return d;}}catch(_){}return null;}
 function getDefinition(data){return data?.[0]?.meanings?.[0]?.definitions?.[0]?.definition||null;}
 
+/* ═══ New APIs ═══ */
+async function fetchCountry(name){try{const r=await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(name)}`);if(r.ok){const d=await r.json();if(d?.length)return d[0];}}catch(_){}return null;}
+async function fetchNASA(query){try{const r=await fetch(`https://images-api.nasa.gov/search?q=${encodeURIComponent(query)}&media_type=image`);if(r.ok){const d=await r.json();if(d?.collection?.items?.length)return d.collection.items.slice(0,3);}}catch(_){}return null;}
+async function fetchSpaceX(){try{const r=await fetch('https://api.spacexdata.com/v4/launches/upcoming');if(r.ok){const d=await r.json();if(d?.length)return d.slice(0,3);}}catch(_){}return null;}
+async function fetchCrypto(coin){try{const r=await fetch(`https://api.coingecko.com/api/v3/coins/${encodeURIComponent(coin)}`);if(r.ok){const d=await r.json();return d;}}catch(_){}return null;}
+async function fetchReddit(subreddit){try{const r=await fetch(`https://www.reddit.com/r/${encodeURIComponent(subreddit)}/hot.json`);if(r.ok){const d=await r.json();if(d?.data?.children?.length)return d.data.children.slice(0,3);}}catch(_){}return null;}
+
 /* ═══ Typos ═══ */
 const TYPOS={"helo":"hello","heloo":"hello","hii":"hi","thnks":"thanks","thankyou":"thank you","thank u":"thank you","thx":"thanks","ty":"thank you","plz":"please","pls":"please","wats":"what's","wat":"what","wut":"what","hw":"how","u":"you","ur":"your","ya":"you","yea":"yeah","gud":"good","gd":"good","gr8":"great","awsum":"awesome","sory":"sorry","srry":"sorry","cant":"can't","dont":"don't","didnt":"didn't","doesnt":"doesn't","isnt":"isn't","teh":"the","taht":"that","adn":"and","becuase":"because","becuse":"because","knwo":"know","konw":"know","im":"i'm"};
 function correctTypos(text){let o=text;for(const[t,c]of Object.entries(TYPOS))o=o.replace(new RegExp(`\\b${t.replace(/'/g,"\\'")}\\b`,'gi'),c);return o;}
@@ -743,6 +750,21 @@ async function generateResponse(raw){
   // Books
   if(/\b(book|books|novel|author)\b/.test(msg)){const q=msg.replace(/\b(book|books|novel|author)\b/gi,'').trim();if(q.length>2){const books=await fetchBooks(q);if(books?.length){const b=books[0],title=b.title||'Unknown',author=b.authors?.[0]?.name||'Unknown',dl=b.download_count?.toLocaleString()||'0',subs=b.subjects?.slice(0,3).join(', ')||'';return`📖 <strong>${escHtml(title)}</strong><br>by ${escHtml(author)}<br><br><strong>Downloads:</strong> ${dl} (Project Gutenberg)<br>${subs?`<strong>Subjects:</strong> ${escHtml(subs)}<br>`:''}<br>Anything else you'd like to know?`;}}}
 
+  // Countries
+  if(msg.includes('population of')||msg.includes('flag of')||msg.includes('capital of')||msg.includes('country')||msg.includes('population')||msg.includes('flag')){let country=msg.replace(/\b(population of|flag of|capital of|country|population|flag|the|a|an|in|of|for|about|what is|what's|show me|tell me)\b/gi,'').trim();if(country.length>2){const c=await fetchCountry(country);if(c){const name=c.name?.common||country;const pop=c.population?.toLocaleString()||'Unknown';const cap=c.capital||'Unknown';const region=c.region||'Unknown';const flag=c.flags?.svg||'';let resp=`🌍 <strong>${escHtml(name)}</strong><br>`;if(msg.includes('population'))resp+=`• <strong>Population:</strong> ${pop}<br>`;if(msg.includes('flag'))resp+=`• <strong>Flag:</strong> ${flag?'🏳':'Not available'}<br>`;if(msg.includes('capital'))resp+=`• <strong>Capital:</strong> ${escHtml(cap)}<br>`;if(!msg.includes('population')&&!msg.includes('flag')&&!msg.includes('capital'))resp+=`• <strong>Population:</strong> ${pop}<br>• <strong>Capital:</strong> ${escHtml(cap)}<br>• <strong>Region:</strong> ${escHtml(region)}<br>`;resp+=`Anything else about ${escHtml(name)}?`;return resp;}}}
+
+  // NASA
+  if(msg.includes('nasa')||msg.includes('space')||msg.includes('astronomy')||msg.includes('galaxy')||msg.includes('planet')){const query=msg.replace(/\b(nasa|space|astronomy|galaxy|planet|show me|tell me|about|images|photos|pictures)\b/gi,' ').trim();const results=await fetchNASA(query||'universe');if(results){let resp=`🚀 <strong>NASA Images</strong><br><br>`;results.forEach(r=>{const title=r.data?.[0]?.title||'No title';const desc=r.data?.[0]?.description?.substring(0,100)||'No description';resp+=`• <strong>${escHtml(title)}</strong><br>&nbsp;&nbsp;${escHtml(desc)}...<br>`;});return resp;}}
+
+  // SpaceX
+  if(msg.includes('spacex')||msg.includes('launch')||msg.includes('rocket')){const launches=await fetchSpaceX();if(launches){let resp=`🚀 <strong>Upcoming SpaceX Launches</strong><br><br>`;launches.forEach(l=>{const name=l.name||'Unknown mission';const date=l.date_local?new Date(l.date_local).toLocaleDateString():'TBD';resp+=`• <strong>${escHtml(name)}</strong><br>&nbsp;&nbsp;📅 ${date}<br>`;});return resp;}}
+
+  // Crypto
+  if(msg.includes('bitcoin')||msg.includes('btc')||msg.includes('ethereum')||msg.includes('eth')||msg.includes('crypto')||msg.includes('price')){let coin='bitcoin';if(msg.includes('ethereum')||msg.includes('eth'))coin='ethereum';else if(msg.includes('doge'))coin='dogecoin';const data=await fetchCrypto(coin);if(data){const name=data.name||coin;const price=data.market_data?.current_price?.usd?.toLocaleString('en-US',{style:'currency',currency:'USD'})||'Unknown';const change=data.market_data?.price_change_percentage_24h?.toFixed(2)||'0';return`💰 <strong>${escHtml(name)}</strong><br>• <strong>Price:</strong> ${price}<br>• <strong>24h Change:</strong> ${change}%`;}}
+
+  // Reddit
+  if(msg.includes('reddit')||msg.includes('r/')){let sub=msg.replace(/\b(reddit|r\/|show me|tell me|about|posts|from)\b/gi,'').trim()||'programming';const posts=await fetchReddit(sub);if(posts){let resp=`📱 <strong>r/${escHtml(sub)} - Hot Posts</strong><br><br>`;posts.forEach(p=>{const title=p.data?.title||'No title';const score=p.data?.score||0;resp+=`• <strong>${escHtml(title)}</strong> (${score}↑)<br>`;});return resp;}}
+
   // Wikipedia
   const Q_PATS=['what is','what are','what was','what were','who is','who are','who was','who were','where is','where are','where was','where were','when is','when was','why is','why was','how is','how was','tell me about','explain','describe','define'];
   if(Q_PATS.some(p=>msg.includes(p))){
@@ -758,7 +780,7 @@ async function generateResponse(raw){
   }
 
   // Dictionary fallback
-  const COMMON=new Set(['hi','hey','hello','how','what','why','when','where','lol','ok','okay','yes','no','thanks','thank','please','are','you','doing','can','help','the','a','an','is','was','were','been','have','has','had','do','does','did','will','would','could','should','may','might','must','to','for','of','in','on','at','by','with','from','about','tell','just','very','too','also','some','more','then','than','only','not','but','and','or','so','if','its','it','this','that','me','my','your']);
+  const COMMON=new Set(['hi','hey','hello','how','what','why','when','where','lol','ok','okay','yes','no','thanks','thank','please','are','you','doing','can','help','the','a','an','is','was','were','been','have','has','had','do','does','did','will','would','could','should','may','might','must','to','for','of','in','on','at','by','with','from','about','tell','just','very','too','also','some','more','then','than','only','not','but','and','or','so','if','its','it','this','that','me','my','your','book','books','novel','author','find','search','look','get','give','make','take','come','go','see','know','think','want','need','use','work','time','year','people','way','day','thing','good','new','first','last','long','great','little','own','other','old','right','big','high','different','small','large','next','early','young','important','public','bad','same','able']);
   const words=msg.split(/\s+/).filter(w=>w.length>2&&!COMMON.has(w.replace(/[^a-z]/g,'')));
   if(words.length){const w=words[Math.floor(Math.random()*words.length)].replace(/[^a-z]/g,'');const data=await fetchWord(w);const def=getDefinition(data);if(def&&def.length>20)return`📖 <strong>${escHtml(w)}:</strong> ${escHtml(def)}`;}
 

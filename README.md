@@ -5,21 +5,25 @@ Ada is a powerful AI assistant that combines multiple free APIs to provide compr
 ## Features
 
 - **💬 Chat Interface**: Clean, modern chat interface with intelligent responses
-- **� Notes Tab**: Save and manage personal notes with localStorage persistence
+- **📎 File Attachments**: Attach images, videos, audio, PDFs, and documents to messages
+- **🎤 Voice Input**: Use microphone for speech-to-text (Chrome/Edge)
+- **🔊 Auto-Read**: Toggle to have responses read aloud automatically
+- **📝 Notes Tab**: Save and manage personal notes with localStorage persistence
 - **⏱️ Reminders Tab**: Set time-based reminders with countdown timers
 - **🌤️ Weather Modal**: Current weather information via Open-Meteo API
 - **🧮 Calculator Modal**: Mathematical calculations with support for percentages, exponents, and trigonometry
-- **� Translator Modal**: Translate text to 14 different languages
-- **� Multiple Search APIs**: Wikipedia, DuckDuckGo, Dictionary, Gutendex, and more
-- **📎 File Attachments**: Send images, videos, audio, and documents
-- **🎤 Speech-to-Text**: Speak your messages instead of typing
-- **🔊 Text-to-Speech**: Hear Ada speak her responses
+- **🌐 Translator Modal**: Translate text to 14 different languages
+- **🔍 Multiple Search APIs**: Wikipedia, DuckDuckGo, Dictionary, Gutendex, and more
+- **🌍 Countries API**: Get country information (population, capital, flag, region)
+- **🚀 NASA API**: Fetch space and astronomy images
+- **🚀 SpaceX API**: View upcoming launch schedules and rocket data
+- **💰 Crypto API**: Get cryptocurrency prices (Bitcoin, Ethereum, Dogecoin)
+- **📱 Reddit API**: Fetch hot posts from any subreddit
 - **🌙 Dark Mode**: Toggle between light and dark themes
 - **📚 Knowledge Base**: Load knowledge from GitHub repositories
-- **🔄 Auto-read**: Automatically have Ada read her responses
 - **💻 Code Snippets**: Pre-built code examples with copy button
 - **🎉 Quick Chips**: One-click prompts for common tasks
-- **� Toast Notifications**: Feedback for user actions
+- **🔔 Toast Notifications**: Feedback for user actions
 - **😀 Reactions**: React to messages with emojis
 - **🎨 Modern UI**: Beautiful design with CSS variables and smooth animations
 
@@ -64,6 +68,36 @@ Ada integrates with the following free APIs:
 - Fallback when Wikipedia fails
 - Source: [DuckDuckGo](https://duckduckgo.com/)
 
+### REST Countries API
+- Country information (population, capital, flag, region)
+- Comprehensive country data
+- No authentication required
+- Source: [REST Countries](https://restcountries.com/)
+
+### NASA Image and Video Library API
+- Space and astronomy images
+- Mission data and photos
+- Search by query
+- Source: [NASA API](https://images-api.nasa.gov/)
+
+### SpaceX API
+- Upcoming launch schedules
+- Rocket and spacecraft data
+- Mission information
+- Source: [SpaceX API](https://api.spacexdata.com/)
+
+### CoinGecko API
+- Cryptocurrency prices (Bitcoin, Ethereum, Dogecoin)
+- Market data and price changes
+- Real-time pricing
+- Source: [CoinGecko](https://www.coingecko.com/en/api)
+
+### Reddit API
+- Fetch hot posts from subreddits
+- Post titles and scores
+- No authentication for public subreddits
+- Source: [Reddit API](https://www.reddit.com/dev/api/)
+
 ## How It Works
 
 Ada uses a multi-layered approach to answer questions:
@@ -74,12 +108,17 @@ Ada uses a multi-layered approach to answer questions:
 4. **Calculator**: Evaluates mathematical expressions
 5. **Translation**: Uses MyMemory API for translation requests
 6. **Code Snippets**: Provides pre-built code examples
-7. **Dictionary Lookup**: Checks for word definitions
-8. **Wikipedia Search**: Uses MediaWiki REST API with fuzzy matching
-9. **DuckDuckGo Fallback**: Searches the web if Wikipedia fails
-10. **Book Search**: Uses Gutendex for book-related queries
-11. **Knowledge Base**: Searches loaded GitHub knowledge files
-12. **Professional Formatting**: Applies clarity guidelines to all responses
+7. **Countries API**: Fetches country information (population, capital, flag)
+8. **NASA API**: Retrieves space and astronomy images
+9. **SpaceX API**: Gets upcoming launch schedules
+10. **Crypto API**: Fetches cryptocurrency prices
+11. **Reddit API**: Retrieves hot posts from subreddits
+12. **Dictionary Lookup**: Checks for word definitions
+13. **Wikipedia Search**: Uses MediaWiki REST API with fuzzy matching
+14. **DuckDuckGo Fallback**: Searches the web if Wikipedia fails
+15. **Book Search**: Uses Gutendex for book-related queries
+16. **Knowledge Base**: Searches loaded GitHub knowledge files
+17. **Professional Formatting**: Applies clarity guidelines to all responses
 
 No paid AI APIs are used - everything runs using free, public APIs.
 
@@ -101,6 +140,11 @@ No paid AI APIs are used - everything runs using free, public APIs.
 - **Translation in chat**: "Translate hello to French" or "Translate 'good morning' to Spanish"
 - **Code requests**: "Write a Python hello world" or "Show me a JavaScript function"
 - **Fun facts**: "Tell me a fun fact" or "Surprise me"
+- **Country info**: "What is the population of France?" or "Show me the flag of Japan"
+- **NASA images**: "NASA photos of the moon" or "Space images"
+- **SpaceX launches**: "Next SpaceX launch" or "Upcoming launches"
+- **Crypto prices**: "Bitcoin price" or "Ethereum price"
+- **Reddit posts**: "Reddit programming" or "r/funny posts"
 - **Greeting responses**: "Hi", "Hello", "How are you?"
 - **Quick chips**: Click any chip for instant prompts
 
@@ -136,23 +180,6 @@ No paid AI APIs are used - everything runs using free, public APIs.
 - Select target language from the dropdown (14 languages available)
 - Click "Translate"
 - View the translation
-
-### File Attachments
-- Click the paperclip icon
-- Select files (images, videos, audio, documents)
-- Files will be previewed before sending
-- Click "Send" to attach files to your message
-
-### Speech-to-Text
-- Click the microphone icon
-- Speak your message
-- Ada will transcribe and send it automatically
-- Available in Chrome and Edge
-
-### Text-to-Speech
-- Click the speaker icon next to Ada's messages
-- Ada will speak her response
-- Enable the 🔊 toggle in the header to auto-read all responses
 
 ### Dark Mode
 - Click the 🌙/☀️ button in the header to toggle dark mode
