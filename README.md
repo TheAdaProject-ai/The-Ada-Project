@@ -7,6 +7,8 @@ A collection of AI assistant variants with different focuses and themes. Each va
 ### Ada
 **Full-featured AI assistant** with comprehensive functionality.
 
+Ada is an AI assistant with specialized variants for different domains - including Ada.Books for literary assistance, Ada.Chat for general conversations, and other focused versions for coffee, students, and Reddit.
+
 - **Features**: Chat interface, notes, reminders, weather lookup, calculator, translator, dark mode
 - **Theme**: Sky blue gradient
 - **File**: `index.html`
