@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ada.Reddit – Social Intelligence</title>
+<link rel="icon" type="image/png" href="Icons/Ada.Reddit.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#e2460a;--accent-dark:#c23c08;--accent-muted:#fff0eb;
+  --bg:#fafafa;--surface:#ffffff;--surface2:#f4f4f5;
+  --border:#e4e4e7;--border2:#d4d4d8;
+  --text:#18181b;--muted:#71717a;--hint:#a1a1aa;
+  --radius:10px;--radius-lg:14px;
+  --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace;
+}
+[data-theme="dark"]{
+  --bg:#09090b;--surface:#18181b;--surface2:#27272a;
+  --border:#3f3f46;--border2:#52525b;
+  --text:#fafafa;--muted:#a1a1aa;--hint:#71717a;
+  --accent-muted:#431407;
+  --shadow:0 1px 4px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+}
+html{font-size:15px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.65;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:14px;padding:14px 28px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100;flex-shrink:0}
+.logo-mark{width:36px;height:36px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:16px;flex-shrink:0}
+.header-title{font-size:15px;font-weight:600;color:var(--text);line-height:1.1}
+.header-sub{font-size:11.5px;color:var(--muted);line-height:1}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.hdr-btn{width:34px;height:34px;border:1px solid var(--border);background:transparent;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;font-size:15px}
+.hdr-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+
+.search-bar{padding:20px 28px;max-width:860px;margin:0 auto;width:100%}
+.search-row{display:flex;gap:8px}
+.search-input{flex:1;padding:10px 16px;border:1.5px solid var(--border);border-radius:var(--radius);font:14.5px var(--font);background:var(--surface);color:var(--text);outline:none;transition:border-color .15s}
+.search-input:focus{border-color:var(--accent)}
+.search-input::placeholder{color:var(--hint)}
+.search-btn{padding:10px 22px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font:500 14px var(--font);cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.search-btn:hover{background:var(--accent-dark)}
+.search-btn:disabled{opacity:.45;cursor:not-allowed}
+.search-btn svg{width:14px;height:14px}
+.quick-subs{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.sub-chip{padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-size:12.5px;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.sub-chip:hover{background:var(--accent-muted);color:var(--accent);border-color:var(--accent-muted)}
+[data-theme="dark"] .sub-chip:hover{background:#431407;color:#fb923c}
+
+.feed-area{flex:1;max-width:860px;margin:0 auto;width:100%;padding:0 28px 28px}
+.feed-header{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:13.5px;color:var(--muted)}
+.feed-header strong{color:var(--text);font-weight:600}
+.feed-header .badge{padding:2px 8px;background:var(--accent-muted);color:var(--accent);border-radius:20px;font-size:11.5px;font-weight:500}
+[data-theme="dark"] .feed-header .badge{background:#431407;color:#fb923c}
+
+.post-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:10px;transition:box-shadow .15s,border-color .15s;display:block;text-decoration:none;color:inherit}
+.post-card:hover{box-shadow:var(--shadow);border-color:var(--border2)}
+.post-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--muted)}
+.post-sub{font-weight:600;color:var(--accent)}
+.post-dot{width:3px;height:3px;background:var(--border2);border-radius:50%;flex-shrink:0}
+.post-title{font-size:15px;font-weight:500;color:var(--text);line-height:1.5;margin-bottom:10px}
+.post-title:hover{color:var(--accent)}
+.post-meta{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted)}
+.post-preview{font-size:13px;color:var(--muted);line-height:1.55;margin:8px 0;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.view-link{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border:1px solid var(--border);border-radius:7px;font-size:12.5px;font-weight:500;color:var(--accent);text-decoration:none;transition:all .15s;margin-top:10px;cursor:pointer}
+.view-link:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.view-link svg{width:12px;height:12px}
+
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-content{background:var(--surface);border-radius:var(--radius-lg);width:90vw;max-width:900px;height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
+.modal-title{font-size:14px;font-weight:600;color:var(--text)}
+.modal-close{width:32px;height:32px;border:none;background:transparent;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px;transition:all .15s}
+.modal-close:hover{background:var(--surface2);color:var(--text)}
+.modal-body{flex:1;overflow:hidden}
+.modal-body iframe{width:100%;height:100%;border:none}
+
+.api-config{padding:16px 28px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.api-config-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.api-config-row{display:flex;gap:8px;margin-bottom:8px}
+.api-config-row input{flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:7px;font:13px var(--font);background:var(--surface);color:var(--text);outline:none}
+.api-config-row input:focus{border-color:var(--accent)}
+.api-config-btn{padding:7px 14px;background:var(--accent);color:#fff;border:none;border-radius:7px;font:500 12.5px var(--font);cursor:pointer;transition:background .15s}
+.api-config-btn:hover{background:var(--accent-dark)}
+.api-status{font-size:11.5px;color:var(--muted);margin-top:6px}
+.api-status.connected{color:var(--accent)}
+.api-status.error{color:#ef4444}
+
+.loading{text-align:center;padding:48px;color:var(--muted)}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error{text-align:center;padding:48px;color:var(--muted)}
+.error-icon{font-size:40px;margin-bottom:12px}
+.empty{text-align:center;padding:48px;color:var(--muted)}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+</style>
+</head>
+<body>
+<header>
+  <img src="The Ada Project - Logo.png" alt="Ada Logo" class="logo-mark">
+  <div>
+    <div class="header-title">Ada.Reddit</div>
+    <div class="header-sub">Social Intelligence</div>
+  </div>
+  <div class="hdr-right">
+    <button class="hdr-btn" onclick="toggleDark()" id="darkBtn">🌙</button>
+  </div>
+</header>
+
+<div class="search-bar">
+  <div class="search-row">
+    <input class="search-input" id="subInput" type="text" placeholder="Enter subreddit (e.g. programming, worldnews, all)" value="all">
+    <button class="search-btn" onclick="fetchPosts()" id="searchBtn">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="14" y2="14"/></svg>
+      Search
+    </button>
+  </div>
+  <div class="quick-subs">
+    <span class="sub-chip" onclick="searchSub('all')">all</span>
+    <span class="sub-chip" onclick="searchSub('programming')">programming</span>
+    <span class="sub-chip" onclick="searchSub('worldnews')">worldnews</span>
+    <span class="sub-chip" onclick="searchSub('science')">science</span>
+    <span class="sub-chip" onclick="searchSub('technology')">technology</span>
+    <span class="sub-chip" onclick="searchSub('askreddit')">AskReddit</span>
+    <span class="sub-chip" onclick="searchSub('todayilearned')">TodayILearned</span>
+    <span class="sub-chip" onclick="searchSub('funny')">funny</span>
+    <span class="sub-chip" onclick="searchSub('gaming')">gaming</span>
+    <span class="sub-chip" onclick="searchSub('movies')">movies</span>
+  </div>
+</div>
+
+<div class="api-config">
+  <div class="api-config-label">Reddit API Configuration</div>
+  <div class="api-config-row">
+    <input id="clientId" type="text" placeholder="Client ID (from reddit.com/prefs/apps)">
+    <input id="clientSecret" type="password" placeholder="Client Secret">
+    <button class="api-config-btn" onclick="connectReddit()">Connect</button>
+  </div>
+  <div class="api-status" id="apiStatus">Not connected - using RSS fallback</div>
+</div>
+
+<div class="feed-area">
+  <div class="feed-header" id="feedHeader">
+    <strong>r/all</strong> <span class="badge">hot</span>
+  </div>
+  <div id="postsContainer">
+    <div class="loading"><div class="spinner"></div>Loading posts…</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="threadModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Reddit Thread</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <iframe id="threadFrame" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+let dark=false,accessToken=null;
+const cache={dict:{}};
+
+function toggleDark(){dark=!dark;document.documentElement.setAttribute('data-theme',dark?'dark':'');document.getElementById('darkBtn').textContent=dark?'☀️':'🌙';localStorage.setItem('ada-reddit-dark',dark?'1':'0');}
+if(localStorage.getItem('ada-reddit-dark')==='1')toggleDark();
+
+document.getElementById('subInput').addEventListener('keydown',e=>{if(e.key==='Enter')fetchPosts();});
+
+function searchSub(sub){document.getElementById('subInput').value=sub;fetchPosts();}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');}
+function openModal(url){document.getElementById('threadFrame').src=url;document.getElementById('threadModal').classList.add('show');document.body.style.overflow='hidden';}
+function closeModal(){document.getElementById('threadModal').classList.remove('show');document.getElementById('threadFrame').src='';document.body.style.overflow='';}
+document.getElementById('threadModal').addEventListener('click',e=>{if(e.target.id==='threadModal')closeModal();});
+
+async function apiDict(word){if(cache.dict[word])return cache.dict[word];try{const r=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);if(r.ok){const d=await r.json();cache.dict[word]=d;return d;}}catch(_){}return null;}
+async function getWordContext(word){const d=await apiDict(word);if(!d||!d[0])return null;const entry=d[0];const pos=entry.meanings?.[0]?.partOfSpeech||'unknown';const meaning=entry.meanings?.[0]?.definitions?.[0]?.definition||'definition not found';return{word:entry.word,phonetic:entry.phonetic,pos,meaning};}
+async function apiThesaurus(word){
+  if(cache.thesaurus?.[word])return cache.thesaurus[word];
+  try{
+    const r=await fetch(`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(word)}&max=10`);
+    if(r.ok){
+      const d=await r.json();
+      if(!cache.thesaurus)cache.thesaurus={};
+      cache.thesaurus[word]=d;
+      return d;
+    }
+  }catch(_){}
+  return null;
+}
+const ABBREVIATIONS={'hru':'how are you','hmu':'hit me up','nm':'not much','nvm':'never mind','brb':'be right back','btw':'by the way','imo':'in my opinion','tbh':'to be honest','idk':'i do not know','ikr':'i know right','lol':'laugh out loud','omg':'oh my god','smh':'shaking my head','ttyl':'talk to you later','ngl':'not gonna lie','rn':'right now','afaik':'as far as i know','bbl':'be back later','cu':'see you','g2g':'got to go','ic':'i see','k':'okay','lmk':'let me know','nbd':'no big deal','plz':'please','thx':'thanks','u':'you','ur':'your','w/':'with','w/o':'without','y':'why'};
+function expandAbbreviations(text){let result=text.toLowerCase();for(const[abbr,full]of Object.entries(ABBREVIATIONS)){result=result.replace(new RegExp(`\\b${abbr}\\b`,'gi'),full);}return result;}
+async function spellCheck(word){
+  if(cache.spell?.[word])return cache.spell[word];
+  try{
+    const r=await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(word)}&max=5`);
+    if(r.ok){
+      const d=await r.json();
+      if(!cache.spell)cache.spell={};
+      cache.spell[word]=d;
+      return d;
+    }
+  }catch(_){}
+  return null;
+}
+
+async function connectReddit(){
+  const clientId=document.getElementById('clientId').value.trim();
+  const clientSecret=document.getElementById('clientSecret').value.trim();
+  const status=document.getElementById('apiStatus');
+  
+  if(!clientId||!clientSecret){
+    status.textContent='Client ID and Secret required';
+    status.className='api-status error';
+    return;
+  }
+  
+  status.textContent='Connecting...';
+  status.className='api-status';
+  
+  try{
+    const auth=btoa(`${clientId}:${clientSecret}`);
+    const res=await fetch('https://www.reddit.com/api/v1/access_token',{
+      method:'POST',
+      headers:{
+        'Authorization':`Basic ${auth}`,
+        'Content-Type':'application/x-www-form-urlencoded'
+      },
+      body:'grant_type=client_credentials'
+    });
+    
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const data=await res.json();
+    accessToken=data.access_token;
+    
+    status.textContent='Connected ✓';
+    status.className='api-status connected';
+    localStorage.setItem('ada-reddit-token',accessToken);
+    localStorage.setItem('ada-reddit-client-id',clientId);
+    localStorage.setItem('ada-reddit-client-secret',clientSecret);
+    fetchPosts();
+  }catch(err){
+    status.textContent=`Connection failed: ${err.message}`;
+    status.className='api-status error';
+  }
+}
+
+function loadRedditConfig(){
+  const token=localStorage.getItem('ada-reddit-token');
+  const clientId=localStorage.getItem('ada-reddit-client-id');
+  const clientSecret=localStorage.getItem('ada-reddit-client-secret');
+  
+  if(token){
+    accessToken=token;
+    document.getElementById('apiStatus').textContent='Connected ✓';
+    document.getElementById('apiStatus').className='api-status connected';
+  }
+  if(clientId)document.getElementById('clientId').value=clientId;
+  if(clientSecret)document.getElementById('clientSecret').value=clientSecret;
+}
+
+loadRedditConfig();
+function fmtDate(str){if(!str)return'';const d=new Date(str);const now=new Date();const diff=Math.floor((now-d)/60000);if(diff<1)return'just now';if(diff<60)return`${diff}m ago`;if(diff<1440)return`${Math.floor(diff/60)}h ago`;return d.toLocaleDateString([],{month:'short',day:'numeric'});}
+
+async function fetchPosts(){
+  const sub=(document.getElementById('subInput').value.trim()||'all').replace(/^r\//,'');
+  const btn=document.getElementById('searchBtn');const container=document.getElementById('postsContainer');
+  document.getElementById('feedHeader').innerHTML=`<strong>r/${esc(sub)}</strong> <span class="badge">hot</span>`;
+  container.innerHTML='<div class="loading"><div class="spinner"></div>Loading posts…</div>';
+  btn.disabled=true;
+
+  try{
+    let posts=[];
+    
+    // Try Reddit API first if we have an access token
+    if(accessToken){
+      try{
+        const res=await fetch(`https://oauth.reddit.com/r/${sub}/hot?limit=20`,{
+          headers:{
+            'Authorization':`Bearer ${accessToken}`,
+            'User-Agent':'Ada.Reddit/1.0'
+          }
+        });
+        if(res.ok){
+          const data=await res.json();
+          if(data?.data?.children?.length){
+            posts=data.data.children.map(child=>{
+              const post=child.data;
+              return{
+                title:post.title||'No title',
+                link:`https://www.reddit.com${post.permalink}`,
+                author:post.author||'unknown',
+                pubDate:new Date(post.created_utc*1000).toISOString(),
+                description:post.selftext_html||post.url||''
+              };
+            });
+          }
+        }
+      }catch(err){
+        console.error('Reddit API error:',err);
+        accessToken=null;
+        localStorage.removeItem('ada-reddit-token');
+        document.getElementById('apiStatus').textContent='Token expired - reconnect';
+        document.getElementById('apiStatus').className='api-status error';
+      }
+    }
+    
+    // Fallback: RSS methods
+    if(!posts.length){
+      const rssUrl=`https://www.reddit.com/r/${encodeURIComponent(sub)}/hot/.rss`;
+      
+      // Try allorigins CORS proxy first
+      try{
+        const corsUrl=`https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+        const corsRes=await fetch(corsUrl);
+        if(corsRes.ok){
+          const rssText=await corsRes.text();
+          const parser=new DOMParser();
+          const xml=parser.parseFromString(rssText,'text/xml');
+          const items=[...xml.querySelectorAll('item')].slice(0,20);
+          if(items.length){
+            posts=items.map(item=>{
+              const title=item.querySelector('title')?.textContent||'No title';
+              const link=item.querySelector('link')?.textContent||item.querySelector('guid')?.textContent||'#';
+              const author=item.querySelector('dc\\:creator')?.textContent||item.querySelector('author')?.textContent||'unknown';
+              const pubDate=item.querySelector('pubDate')?.textContent;
+              const desc=item.querySelector('description')?.textContent||'';
+              return{title,link,author,pubDate,description:desc};
+            });
+          }
+        }
+      }catch(_){}
+      
+      // Fallback: try RSS2JSON
+      if(!posts.length){
+        try{
+          const res=await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`);
+          if(res.ok){
+            const data=await res.json();
+            posts=data.items||[];
+          }
+        }catch(_){}
+      }
+    }
+    
+    if(!posts.length){container.innerHTML='<div class="empty"><div class="error-icon">📭</div><p>No posts found in r/'+esc(sub)+'</p></div>';return;}
+
+    container.innerHTML=posts.map(post=>{
+      const title=post.title||'No title';
+      const author=post.author||'unknown';
+      const pubDate=fmtDate(post.pubDate);
+      const link=post.link||'#';
+      const desc=(post.description||'').replace(/<[^>]*>/g,'').replace(/&[^;]+;/g,'').trim().substring(0,180);
+      return`<div class="post-card">
+        <div class="post-top">
+          <span class="post-sub">r/${esc(sub)}</span>
+          <span class="post-dot"></span>
+          <span>u/${esc(author)}</span>
+          ${pubDate?`<span class="post-dot"></span><span>${esc(pubDate)}</span>`:''}
+        </div>
+        <div class="post-title">${esc(title)}</div>
+        ${desc?`<div class="post-preview">${esc(desc)}</div>`:''}
+        <div class="view-link" data-url="${esc(link)}">
+          View thread
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9 4 13 8 9 12"/></svg>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(err){
+    let errorMsg=err.message||'Unknown error';
+    if(errorMsg.includes('CORS'))errorMsg='CORS blocked - using RSS fallback';
+    else if(errorMsg.includes('401'))errorMsg='Authentication failed - check credentials';
+    else if(errorMsg.includes('403'))errorMsg='Access forbidden';
+    else if(errorMsg.includes('404'))errorMsg='Subreddit not found';
+    container.innerHTML=`<div class="error"><div class="error-icon">⚠️</div><strong>Could not load posts</strong><p style="margin-top:8px;font-size:13px">${esc(errorMsg)}</p><p style="margin-top:8px;font-size:12.5px;color:var(--hint)">Connect to Reddit API for better reliability, or use RSS fallback.</p></div>`;
+  }finally{btn.disabled=false;}
+}
+
+document.getElementById('postsContainer').addEventListener('click',e=>{const el=e.target.closest('[data-url]');if(el){const url=el.dataset.url;if(url&&url!=='#')openModal(url);}});
+fetchPosts();
+</script>
+</body>
+</html>

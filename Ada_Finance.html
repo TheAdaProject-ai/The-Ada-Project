@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ada.Finance – Money & Markets</title>
+<link rel="icon" type="image/png" href="Icons/Ada.Finance.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#059669;--accent-dark:#047857;--accent-muted:#d1fae5;
+  --bg:#fafafa;--surface:#ffffff;--surface2:#f4f4f5;
+  --border:#e4e4e7;--border2:#d4d4d8;
+  --text:#18181b;--muted:#71717a;--hint:#a1a1aa;
+  --user-bg:#059669;--ada-bg:#ffffff;
+  --code-bg:#18181b;--code-text:#e4e4e7;
+  --radius:10px;--radius-lg:14px;
+  --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace;
+}
+[data-theme="dark"]{
+  --bg:#09090b;--surface:#18181b;--surface2:#27272a;
+  --border:#3f3f46;--border2:#52525b;
+  --text:#fafafa;--muted:#a1a1aa;--hint:#71717a;
+  --ada-bg:#27272a;--accent-muted:#064e3b;
+  --shadow:0 1px 4px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+}
+html{font-size:15px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.65;-webkit-font-smoothing:antialiased}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-top{padding:16px;border-bottom:1px solid var(--border)}
+.new-btn{width:100%;padding:10px 14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font:500 13px var(--font);cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .15s}
+.new-btn:hover{background:var(--accent-dark)}
+.new-btn svg{width:14px;height:14px;flex-shrink:0}
+.conv-list{flex:1;overflow-y:auto;padding:8px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.conv-item{padding:10px 12px;border-radius:var(--radius);cursor:pointer;transition:background .12s;margin-bottom:2px;font-size:12.5px;color:var(--muted);line-height:1.4;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid transparent}
+.conv-item:hover{background:var(--surface2);color:var(--text)}
+.conv-item.active{background:var(--accent-muted);color:var(--accent);border-color:var(--accent-muted)}
+[data-theme="dark"] .conv-item.active{background:#064e3b;color:#6ee7b7;border-color:#064e3b}
+.conv-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.conv-date{font-size:11px;color:var(--hint);flex-shrink:0}
+.conv-actions{display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.conv-item:hover .conv-actions{opacity:1}
+.conv-act-btn{background:none;border:none;cursor:pointer;padding:4px;border-radius:6px;color:var(--hint);font-size:13px;line-height:1;transition:all .12s}
+.conv-act-btn:hover{background:var(--border);color:var(--text)}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+header{display:flex;align-items:center;gap:14px;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.logo-mark{width:36px;height:36px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:16px;flex-shrink:0}
+.bot-name-display{font-size:15px;font-weight:600;color:var(--text);line-height:1.1}
+.header-sub{font-size:11.5px;color:var(--muted);line-height:1}
+.hdr-btns{margin-left:auto;display:flex;align-items:center;gap:6px}
+.hdr-btn{width:34px;height:34px;border:1px solid var(--border);background:transparent;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;font-size:15px}
+.hdr-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.chat-area{flex:1;overflow-y:auto;padding:28px 0;scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.chat-inner{max-width:720px;margin:0 auto;padding:0 24px;display:flex;flex-direction:column;gap:20px}
+.welcome{padding:32px 0 16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.welcome-mark{width:64px;height:64px;border-radius:16px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:26px;margin-bottom:8px}
+.welcome h2{font-size:22px;font-weight:600;color:var(--text)}
+.welcome p{font-size:14px;color:var(--muted);max-width:420px;line-height:1.6}
+.chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:12px}
+.chip{padding:7px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:12.5px;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.chip:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.msg{display:flex;gap:10px;align-items:flex-start;max-width:88%}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg.ada{align-self:flex-start}
+.msg-av{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.msg-av.user-av{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.msg-body{display:flex;flex-direction:column;gap:5px;min-width:0}
+.bubble{padding:12px 16px;border-radius:var(--radius-lg);font-size:14.5px;line-height:1.65;word-break:break-word}
+.msg.ada .bubble{background:var(--ada-bg);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:4px;box-shadow:var(--shadow)}
+.msg.user .bubble{background:var(--user-bg);color:#fff;border-bottom-right-radius:4px}
+.msg-meta{font-size:11px;color:var(--hint);padding:0 4px}
+.msg.user .msg-meta{text-align:right}
+.typing-bubble{padding:12px 18px;background:var(--ada-bg);border:1px solid var(--border);border-radius:var(--radius-lg);border-bottom-left-radius:4px;box-shadow:var(--shadow);display:flex;gap:5px;align-items:center}
+.typing-dot{width:7px;height:7px;background:var(--hint);border-radius:50%;animation:bounce 1.3s infinite}
+.typing-dot:nth-child(2){animation-delay:.18s}
+.typing-dot:nth-child(3){animation-delay:.36s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-6px);opacity:1}}
+.input-area{padding:16px 24px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.input-wrap{max-width:720px;margin:0 auto}
+.input-box{display:flex;gap:8px;align-items:flex-end;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:8px 8px 8px 16px;transition:border-color .15s}
+.input-box:focus-within{border-color:var(--accent)}
+textarea{flex:1;resize:none;border:none;background:transparent;font:14.5px/1.5 var(--font);outline:none;color:var(--text);min-height:24px;max-height:130px;overflow-y:auto;scrollbar-width:thin;padding:4px 0}
+textarea::placeholder{color:var(--hint)}
+.send-btn{width:36px;height:36px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.send-btn:hover{background:var(--accent-dark);transform:scale(1.04)}
+.send-btn:active{transform:scale(.97)}
+.send-btn svg{width:16px;height:16px}
+.input-hint{font-size:11.5px;color:var(--hint);margin-top:8px;text-align:center}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:all .25s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <button class="new-btn" onclick="newChat()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+        New conversation
+      </button>
+    </div>
+    <div class="conv-list" id="convList"></div>
+  </div>
+  <div class="main">
+    <header>
+      <img src="The Ada Project - Logo.png" alt="Ada Logo" class="logo-mark">
+      <div>
+        <div class="bot-name-display" id="botNameDisplay">Ada.Finance</div>
+        <div class="header-sub">Money & Markets</div>
+      </div>
+      <div class="hdr-btns">
+        <button class="hdr-btn" onclick="toggleDark()" id="darkBtn">🌙</button>
+      </div>
+    </header>
+    <div class="chat-area" id="chatArea">
+      <div class="chat-inner" id="chatInner"></div>
+    </div>
+    <div class="input-area">
+      <div class="input-wrap">
+        <div class="input-box">
+          <textarea id="msgInput" rows="1" placeholder="Ask about crypto, stocks, or currency…" oninput="autoGrow(this)"></textarea>
+          <button class="send-btn" onclick="send()">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="2" x2="6" y2="10"/><polyline points="14 2 9 14 6 10 2 7 14 2"/></svg>
+          </button>
+        </div>
+        <div class="input-hint">Enter to send · Shift+Enter for new line</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+let dark=false,convs=[],curId=null,busy=false;
+let botName='Ada.Finance';
+const cache={};
+
+document.getElementById('msgInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+if(localStorage.getItem('ada-finance-dark')==='1')toggleDark();
+loadConvs();if(!curId)newChat();
+
+function toggleDark(){dark=!dark;document.documentElement.setAttribute('data-theme',dark?'dark':'');document.getElementById('darkBtn').textContent=dark?'☀️':'🌙';localStorage.setItem('ada-finance-dark',dark?'1':'0');}
+function loadConvs(){const s=localStorage.getItem('ada-finance-convs');if(s){convs=JSON.parse(s);renderConvs();}}
+function saveConvs(){localStorage.setItem('ada-finance-convs',JSON.stringify(convs));}
+function fmtDate(iso){const d=new Date(iso),now=new Date();if(d.toDateString()===now.toDateString())return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});return d.toLocaleDateString([],{month:'short',day:'numeric'});}
+function renderConvs(){
+  const el=document.getElementById('convList');
+  if(!convs.length){el.innerHTML='<div style="padding:12px;font-size:12px;color:var(--hint);text-align:center">No conversations yet</div>';return;}
+  el.innerHTML=convs.map(c=>`<div class="conv-item${c.id===curId?' active':''}" onclick="loadConv('${c.id}')"><div class="conv-title">${esc(c.title||'New conversation')}</div><div style="display:flex;align-items:center;gap:4px;flex-shrink:0"><div class="conv-date">${fmtDate(c.date)}</div><div class="conv-actions"><button class="conv-act-btn" onclick="event.stopPropagation();dlConv('${c.id}')">⬇</button><button class="conv-act-btn" onclick="event.stopPropagation();delConv('${c.id}')">✕</button></div></div></div>`).join('');
+}
+function newChat(){curId=Date.now().toString();convs.unshift({id:curId,title:'New conversation',date:new Date().toISOString(),msgs:[]});saveConvs();renderConvs();document.getElementById('chatInner').innerHTML='';showWelcome();}
+function loadConv(id){curId=id;const c=convs.find(x=>x.id===id);if(!c)return;document.getElementById('chatInner').innerHTML='';hideWelcome();c.msgs.forEach(m=>appendMsg(m.text,m.role,false));renderConvs();scrollBot();}
+function saveMsg(text,role){if(!curId)newChat();const c=convs.find(x=>x.id===curId);if(c){c.msgs.push({text,role});if(c.msgs.length===1||c.title==='New conversation')c.title=text.slice(0,38)+(text.length>38?'…':'');saveConvs();renderConvs();}}
+function delConv(id){convs=convs.filter(x=>x.id!==id);saveConvs();if(curId===id){curId=null;newChat();}else renderConvs();}
+function dlConv(id){const c=convs.find(x=>x.id===id);if(!c)return;let t=`${botName}: ${c.title}\nDate: ${new Date(c.date).toLocaleString()}\n${'─'.repeat(40)}\n\n`;c.msgs.forEach(m=>{t+=`[${m.role==='ada'?botName:'You'}]: ${m.text}\n\n`;});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/plain'}));a.download=`chat-${c.title.replace(/[^a-z0-9]/gi,'-')}.txt`;a.click();}
+
+function showWelcome(){
+  document.getElementById('chatInner').innerHTML=`<div class="welcome"><div class="welcome-mark">💰</div><h2>Welcome to Ada.Finance</h2><p>Ask me about cryptocurrency, stocks, currency exchange, and financial tips!</p><div class="chips"><span class="chip" onclick="qs('Bitcoin price')">₿ Bitcoin</span><span class="chip" onclick="qs('Ethereum price')">Ξ Ethereum</span><span class="chip" onclick="qs('Top cryptocurrencies')">📊 Top Crypto</span><span class="chip" onclick="qs('Convert 100 USD to EUR')">💱 Currency</span><span class="chip" onclick="qs('Investment tips')">📈 Investing</span></div></div>`;
+}
+function hideWelcome(){const w=document.getElementById('chatInner').querySelector('.welcome');if(w)w.remove();}
+
+async function send(){
+  if(busy)return;
+  const inp=document.getElementById('msgInput');const text=inp.value.trim();if(!text)return;
+  busy=true;document.querySelector('.send-btn').disabled=true;
+  hideWelcome();appendMsg(text,'user');saveMsg(text,'user');inp.value='';inp.style.height='auto';
+  const ty=appendTyping();
+  try{
+    const r=await respond(text);ty.remove();appendMsg(r,'ada');saveMsg(r,'ada');
+  }catch(e){ty.remove();appendMsg('Something went wrong — please try again. 😕','ada');}
+  finally{busy=false;document.querySelector('.send-btn').disabled=false;}
+}
+function qs(t){document.getElementById('msgInput').value=t;send();}
+
+function appendMsg(text,role,doScroll=true){
+  const ci=document.getElementById('chatInner');
+  const w=document.createElement('div');w.className=`msg ${role}`;
+  const av=document.createElement('div');av.className=role==='ada'?'msg-av':'msg-av user-av';av.textContent=role==='ada'?'F':'U';
+  const body=document.createElement('div');body.className='msg-body';
+  const bub=document.createElement('div');bub.className='bubble';
+  if(role==='ada')bub.innerHTML=renderMd(text);else bub.textContent=text;
+  const meta=document.createElement('div');meta.className='msg-meta';meta.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  body.appendChild(bub);body.appendChild(meta);w.appendChild(av);w.appendChild(body);ci.appendChild(w);
+  if(doScroll)scrollBot();
+}
+function appendTyping(){
+  const ci=document.getElementById('chatInner');
+  const w=document.createElement('div');w.className='msg ada';
+  w.innerHTML=`<div class="msg-av">F</div><div class="msg-body"><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  ci.appendChild(w);scrollBot();return w;
+}
+function scrollBot(){requestAnimationFrame(()=>{const ca=document.getElementById('chatArea');ca.scrollTop=ca.scrollHeight;});}
+function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,130)+'px';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt');}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+let toastT;
+function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2500);}
+function renderMd(text){
+  text=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  text=text.replace(/\n/g,'<br>');
+  return text;
+}
+
+// CoinGecko API
+async function getCrypto(coin){
+  if(cache.crypto?.[coin])return cache.crypto[coin];
+  try{
+    const r=await fetch(`https://api.coingecko.com/api/v3/coins/${coin}?localization=false&tickers=false&community_data=false&developer_data=false`);
+    if(r.ok){
+      const d=await r.json();
+      if(!cache.crypto)cache.crypto={};
+      cache.crypto[coin]=d;
+      return d;
+    }
+  }catch(_){}
+  return null;
+}
+async function getCryptoList(){
+  if(cache.crypto?.list)return cache.crypto.list;
+  try{
+    const r=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1');
+    if(r.ok){
+      const d=await r.json();
+      if(!cache.crypto)cache.crypto={};
+      cache.crypto.list=d;
+      return d;
+    }
+  }catch(_){}
+  return null;
+}
+
+// Frankfurter API (currency exchange)
+async function getExchangeRate(from,to,amount){
+  const key=`rate_${from}_${to}`;
+  if(cache.exchange?.[key])return cache.exchange[key];
+  try{
+    const r=await fetch(`https://api.frankfurter.app/latest?from=${from}&to=${to}&amount=${amount}`);
+    if(r.ok){
+      const d=await r.json();
+      if(!cache.exchange)cache.exchange={};
+      cache.exchange[key]=d;
+      return d;
+    }
+  }catch(_){}
+  return null;
+}
+async function getExchangeRates(base){
+  const key=`rates_${base}`;
+  if(cache.exchange?.[key])return cache.exchange[key];
+  try{
+    const r=await fetch(`https://api.frankfurter.app/latest?from=${base}`);
+    if(r.ok){
+      const d=await r.json();
+      if(!cache.exchange)cache.exchange={};
+      cache.exchange[key]=d;
+      return d;
+    }
+  }catch(_){}
+  return null;
+}
+
+const API_KEYS={
+  groq:'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',
+  anthropic:'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',
+  gemini:'AIzaSyA_SJwG5UphsMW-1LVCIWFt7sZVMf5zKRg',
+  openai:'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'
+};
+const LEARNING_KEY='ada_finance_learning';
+
+async function callAIAPI(userMessage, context='You are Ada.Finance, a finance expert. Answer briefly and clearly in 2-3 sentences.'){
+  const providers=[
+    {
+      name:'groq',
+      url:'https://api.groq.com/openai/v1/chat/completions',
+      headers:{'Authorization':`Bearer ${API_KEYS.groq}`,'Content-Type':'application/json'},
+      body:{model:'llama-3.3-70b-versatile',messages:[{role:'system',content:context},{role:'user',content:userMessage}],max_tokens:500,temperature:0.7},
+      extract:(d)=>d.choices?.[0]?.message?.content
+    },
+    {
+      name:'anthropic',
+      url:'https://api.anthropic.com/v1/messages',
+      headers:{'x-api-key':API_KEYS.anthropic,'Content-Type':'application/json','anthropic-version':'2023-06-01'},
+      body:{model:'claude-3-5-sonnet-20241022',max_tokens:500,system:context,messages:[{role:'user',content:userMessage}]},
+      extract:(d)=>d.content?.[0]?.text
+    },
+    {
+      name:'gemini',
+      url:`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEYS.gemini}`,
+      headers:{'Content-Type':'application/json'},
+      body:{contents:[{parts:[{text:context+'\n\n'+userMessage}]}]},
+      extract:(d)=>d.candidates?.[0]?.content?.parts?.[0]?.text
+    },
+    {
+      name:'openai',
+      url:'https://api.openai.com/v1/chat/completions',
+      headers:{'Authorization':`Bearer ${API_KEYS.openai}`,'Content-Type':'application/json'},
+      body:{model:'gpt-4o-mini',messages:[{role:'system',content:context},{role:'user',content:userMessage}],max_tokens:500,temperature:0.7},
+      extract:(d)=>d.choices?.[0]?.message?.content
+    }
+  ];
+
+  for(const provider of providers){
+    try{
+      const response=await fetch(provider.url,{
+        method:'POST',
+        headers:provider.headers,
+        body:JSON.stringify(provider.body)
+      });
+      const data=await response.json();
+      const aiResponse=provider.extract(data);
+      if(aiResponse){
+        const learned=JSON.parse(localStorage.getItem(LEARNING_KEY)||'{}');
+        const key=userMessage.toLowerCase().trim().substring(0,50);
+        learned[key]=aiResponse;
+        localStorage.setItem(LEARNING_KEY,JSON.stringify(learned));
+        return aiResponse;
+      }
+    }catch(e){
+      console.error(`${provider.name} API error:`,e);
+    }
+  }
+  return null;
+}
+
+async function respond(raw){
+  const msg=raw.toLowerCase().trim();
+  
+  const learned=JSON.parse(localStorage.getItem(LEARNING_KEY)||'{}');
+  for(const[k,v]of Object.entries(learned)){
+    if(msg.includes(k.toLowerCase()))return v+' (learned)';
+  }
+  
+  // Greetings
+  const GREETINGS={'hi':'Hi there! 💰 How can I help with your finances today?','hello':'Hello! 📊 Ask me about crypto, stocks, or currency exchange!','hey':'Hey! 💵 What financial topic can I help you with?','what can you do':"I can help with cryptocurrency prices, currency exchange, investment tips, and financial advice!"};
+  for(const[k,v]of Object.entries(GREETINGS)){if(msg.includes(k))return v;}
+  
+  // Top cryptocurrencies
+  if(/top crypto|top cryptocurrencies|crypto market|crypto prices/i.test(msg)){
+    const list=await getCryptoList();
+    if(list?.length){
+      let out='📊 **Top Cryptocurrencies**\n\n';
+      list.forEach((c,i)=>{
+        const ch=(c.price_change_percentage_24h||0).toFixed(2);
+        const arrow=parseFloat(ch)>=0?'📈':'📉';
+        out+=`**${i+1}. ${c.name} (${c.symbol.toUpperCase()})**\n   $${c.current_price.toLocaleString()} ${arrow} ${ch}%\n\n`;
+      });
+      return out;
+    }
+  }
+  
+  // Specific crypto
+  if(/bitcoin|btc|ethereum|eth|dogecoin|doge|litecoin|ltc|solana|sol|cardano|ada|polkadot|dot|ripple|xrp|binance|bnb/i.test(msg)){
+    let coin='bitcoin';
+    if(/ethereum|eth/i.test(msg))coin='ethereum';
+    else if(/doge/i.test(msg))coin='dogecoin';
+    else if(/litecoin|ltc/i.test(msg))coin='litecoin';
+    else if(/solana|sol/i.test(msg))coin='solana';
+    else if(/cardano|ada/i.test(msg))coin='cardano';
+    else if(/polkadot|dot/i.test(msg))coin='polkadot';
+    else if(/bnb|binance/i.test(msg))coin='binancecoin';
+    else if(/ripple|xrp/i.test(msg))coin='ripple';
+    
+    const data=await getCrypto(coin);
+    if(data){
+      const md=data.market_data;
+      const price=md?.current_price?.usd?.toLocaleString('en-US',{style:'currency',currency:'USD'})||'—';
+      const ch=(md?.price_change_percentage_24h||0).toFixed(2);
+      const hi=md?.high_24h?.usd?.toLocaleString('en-US',{style:'currency',currency:'USD'})||'—';
+      const lo=md?.low_24h?.usd?.toLocaleString('en-US',{style:'currency',currency:'USD'})||'—';
+      const cap=md?.market_cap?.usd?.toLocaleString('en-US',{style:'currency',currency:'USD',notation:'compact'})||'—';
+      const vol=md?.total_volume?.usd?.toLocaleString('en-US',{style:'currency',currency:'USD',notation:'compact'})||'—';
+      const arrow=parseFloat(ch)>=0?'📈':'📉';
+      return`💰 **${data.name} (${(data.symbol||'').toUpperCase()})**\n\nPrice: **${price}**\n24h Change: ${arrow} ${ch}%\n24h High: ${hi}\n24h Low: ${lo}\nMarket Cap: ${cap}\n24h Volume: ${vol}`;
+    }
+  }
+  
+  // Currency exchange
+  const exM=raw.match(/([\d,.]+)\s*([a-zA-Z]{3})\s+(?:to|in|into)\s+([a-zA-Z]{3})/i);
+  if(exM){
+    const amt=parseFloat(exM[1].replace(/,/g,''));
+    const res=await getExchangeRate(exM[2].toUpperCase(),exM[3].toUpperCase(),amt);
+    if(res?.amount!=null){
+      const rate=res.rates[res.target];
+      return`💱 **Currency Exchange**\n\n${amt.toLocaleString()} ${res.base} = **${res.amount.toLocaleString('en-US',{maximumFractionDigits:2})} ${res.target}**\n\nRate: 1 ${res.base} = ${rate.toFixed(4)} ${res.target}`;
+    }
+  }
+  
+  // Exchange rates
+  if(/exchange rate|currency rate/i.test(msg)){
+    const baseM=msg.match(/(?:exchange|currency)\s*(?:rate|rates?)\s*(?:for|of)?\s*([a-z]{3})/i)||msg.match(/([a-z]{3})\s*(?:exchange|currency)\s*(?:rate|rates?)/i);
+    const base=(baseM?baseM[1]:'usd').toUpperCase();
+    const rates=await getExchangeRates(base);
+    if(rates?.rates){
+      const main=['USD','EUR','GBP','JPY','CAD','AUD','CHF','CNY','INR'].filter(c=>c!==base&&rates.rates[c]);
+      let out=`📊 **${base} Exchange Rates**\n\n`;
+      main.forEach(c=>{
+        out+=`1 ${base} = ${rates.rates[c].toFixed(4)} ${c}\n`;
+      });
+      return out;
+    }
+  }
+  
+  // Investment tips
+  if(/investment|investing|stock|stocks/i.test(msg)){
+    return `📈 **Investment Tips**
+
+**Basic principles:**
+• Diversify your portfolio across different assets
+• Invest for the long term (5+ years)
+• Don't try to time the market
+• Reinvest dividends
+• Keep emergency fund separate (3-6 months expenses)
+
+**Asset classes:**
+• Stocks - ownership in companies
+• Bonds - loans to governments/companies
+• ETFs - baskets of securities
+• Real estate - property investment
+• Cryptocurrency - digital assets (high risk)
+
+**Risk management:**
+• Only invest what you can afford to lose
+• Understand your risk tolerance
+• Research before investing
+• Avoid emotional decisions
+
+⚠️ Disclaimer: I'm an AI, not a financial advisor. Always do your own research and consider consulting a professional advisor.`;
+  }
+  
+  // Budgeting tips
+  if(/budget|saving|money management/i.test(msg)){
+    return `💵 **Budgeting Tips**
+
+**50/30/20 rule:**
+• 50% for needs (rent, food, utilities)
+• 30% for wants (entertainment, hobbies)
+• 20% for savings and debt repayment
+
+**Steps to budget:**
+1. Track all expenses for one month
+2. Categorize spending (needs vs wants)
+3. Set realistic limits for each category
+4. Review and adjust monthly
+5. Automate savings
+
+**Money-saving tips:**
+• Cancel unused subscriptions
+• Cook at home more often
+• Use cashback apps
+• Buy generic brands
+• Negotiate bills (insurance, internet)`;
+  }
+  
+  const aiResponse=await callAIAPI(raw);
+  if(aiResponse)return aiResponse;
+  
+  return pick([
+    "I can help with crypto prices, currency exchange, and financial tips! Ask me about Bitcoin, Ethereum, or convert currencies. 💰",
+    "Looking for financial information? Ask me about cryptocurrency, currency exchange, or investment advice! 📊",
+    "I'm here to help with your finances. Ask about crypto prices, currency conversion, or budgeting tips! 💵"
+  ]);
+}
+</script>
+</body>
+</html>

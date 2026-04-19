@@ -133,6 +133,31 @@ All variants use a consistent design language:
 
 ## Technical Details
 
+### AI Fallback System
+All Ada variants include an intelligent AI fallback mechanism with automatic provider switching:
+
+**Multi-Provider Support:**
+- **Groq** (llama-3.3-70b-versatile) - Fast, open-source LLM
+- **Anthropic** (claude-3-5-sonnet-20241022) - Advanced reasoning
+- **Google Gemini** (gemini-1.5-flash) - Multimodal capabilities
+- **OpenAI** (gpt-4o-mini) - General purpose AI
+
+**How It Works:**
+1. When Ada doesn't have an answer from her internal knowledge base, she checks localStorage for previously learned responses
+2. If no learned response exists, she tries the first AI provider (Groq)
+3. If that provider fails or runs out of quota, she automatically switches to the next provider
+4. Successful AI responses are stored in localStorage for future use (marked with "(learned)")
+5. Over time, Ada "learns" from AI responses and becomes increasingly self-sufficient
+
+**Learning Mechanism:**
+- AI responses are stored in localStorage with domain-specific keys (e.g., `ada_books_learning`)
+- Each variant has its own learning database
+- Learned responses are retrieved instantly without API calls
+- This creates a growing knowledge base personalized to user interactions
+
+**API Keys:**
+The system uses pre-configured API keys. To update keys, modify the `API_KEYS` constant in each Ada variant's HTML file.
+
 ### Ada.Coffee APIs
 - **Weather**: Open-Meteo API (free, no API key required)
 - **Country**: REST Countries API (free, no API key required)

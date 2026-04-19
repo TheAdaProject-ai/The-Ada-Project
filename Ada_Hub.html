@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ada.Hub – All Ada Versions</title>
+<link rel="icon" type="image/png" href="Icons/Ada.Hub.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#6366f1;--primary-dark:#4f46e5;--primary-light:#818cf8;
+  --accent:#ec4899;--accent-dark:#db2777;
+  --bg:#fafafa;--surface:#ffffff;--surface2:#f4f4f5;
+  --border:#e4e4e7;--border2:#d4d4d8;
+  --text:#18181b;--muted:#71717a;--hint:#a1a1aa;
+  --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace;
+}
+[data-theme="dark"]{
+  --bg:#09090b;--surface:#18181b;--surface2:#27272a;
+  --border:#3f3f46;--border2:#52525b;
+  --text:#fafafa;--muted:#a1a1aa;--hint:#71717a;
+  --shadow:0 1px 4px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+}
+html{font-size:15px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.65;-webkit-font-smoothing:antialiased}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+header{margin-bottom:32px;padding:20px 0;border-bottom:1px solid var(--border)}
+.header-content{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.logo-mark{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:28px}
+.header-text h1{font-size:32px;font-weight:700;color:var(--text);line-height:1.1}
+.header-text p{font-size:15px;color:var(--muted);margin-top:4px}
+.search-box{max-width:500px;margin-top:16px}
+.search-input{width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:12px;font:15px var(--font);outline:none;transition:border-color .15s;background:var(--surface);color:var(--text)}
+.search-input:focus{border-color:var(--primary)}
+.search-input::placeholder{color:var(--hint)}
+.categories{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.cat-btn{padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font:13px var(--font);cursor:pointer;transition:all .15s}
+.cat-btn:hover{border-color:var(--primary);color:var(--primary)}
+.cat-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.grid{display:flex;flex-direction:column;gap:12px;max-width:600px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:all .2s;cursor:pointer;text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.card:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow)}
+.card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.card-content{width:100%}
+.card-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:4px}
+.card-desc{font-size:14px;color:var(--muted);line-height:1.4;margin-bottom:12px}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap}
+.card-tag{padding:4px 10px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--muted)}
+.card:hover .card-tag{background:var(--primary-light);color:#fff}
+.section-header{font-size:20px;font-weight:600;color:var(--text);margin:24px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.section-header:first-of-type{margin-top:0}
+.stats{display:flex;gap:24px;margin-bottom:24px}
+.stat-item{text-align:center}
+.stat-value{font-size:28px;font-weight:700;color:var(--primary)}
+.stat-label{font-size:13px;color:var(--muted);margin-top:4px}
+@media(max-width:768px){
+  .header-content{flex-direction:column;text-align:center}
+  .grid{grid-template-columns:1fr}
+  .stats{flex-wrap:wrap;justify-content:center}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="header-content">
+      <div class="logo-mark">H</div>
+      <div class="header-text">
+        <h1>Ada.Hub</h1>
+        <p>Your central hub for all Ada versions</p>
+      </div>
+    </div>
+    <div class="search-box">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search Ada versions..." oninput="filterCards()">
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat-item">
+      <div class="stat-value">19</div>
+      <div class="stat-label">Ada Versions</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">∞</div>
+      <div class="stat-label">Possibilities</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">1</div>
+      <div class="stat-label">Hub</div>
+    </div>
+  </div>
+
+  <div class="categories" id="categories">
+    <button class="cat-btn active" onclick="filterCategory('all')">All</button>
+    <button class="cat-btn" onclick="filterCategory('general')">General</button>
+    <button class="cat-btn" onclick="filterCategory('knowledge')">Knowledge</button>
+    <button class="cat-btn" onclick="filterCategory('entertainment')">Entertainment</button>
+    <button class="cat-btn" onclick="filterCategory('lifestyle')">Lifestyle</button>
+    <button class="cat-btn" onclick="filterCategory('creative')">Creative</button>
+    <button class="cat-btn" onclick="filterCategory('information')">Information</button>
+  </div>
+
+  <div class="grid" id="cardGrid">
+    <!-- General -->
+    <a href="https://ada-ai.edgeone.app" class="card" data-category="general">
+      <div class="card-icon" style="background:#6366f1;color:#fff">🤖</div>
+      <div class="card-content">
+        <div class="card-title">Ada.AI</div>
+        <div class="card-desc">All-in-one AI assistant with diverse API integrations</div>
+        <div class="card-tags">
+          <span class="card-tag">Multi-API</span>
+          <span class="card-tag">General</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Knowledge -->
+    <div class="section-header">Knowledge & Learning</div>
+    <a href="https://ada-books.edgeone.app" class="card" data-category="knowledge">
+      <div class="card-icon" style="background:#059669;color:#fff">📚</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Books</div>
+        <div class="card-desc">Literature, authors, and book recommendations</div>
+        <div class="card-tags">
+          <span class="card-tag">Books</span>
+          <span class="card-tag">Literature</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-students.edgeone.app" class="card" data-category="knowledge">
+      <div class="card-icon" style="background:#16a34a;color:#fff">🎓</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Students</div>
+        <div class="card-desc">Educational resources with Internet Archive</div>
+        <div class="card-tags">
+          <span class="card-tag">Education</span>
+          <span class="card-tag">Archive</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-science.edgeone.app" class="card" data-category="knowledge">
+      <div class="card-icon" style="background:#8b5cf6;color:#fff">🔬</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Science</div>
+        <div class="card-desc">NASA images, SpaceX launches, and scientific concepts</div>
+        <div class="card-tags">
+          <span class="card-tag">NASA</span>
+          <span class="card-tag">SpaceX</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Entertainment -->
+    <div class="section-header">Entertainment</div>
+    <a href="https://ada-games.edgeone.app" class="card" data-category="entertainment">
+      <div class="card-icon" style="background:#dc2626;color:#fff">🎮</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Games</div>
+        <div class="card-desc">Playable games and game discovery via RAWG</div>
+        <div class="card-tags">
+          <span class="card-tag">Games</span>
+          <span class="card-tag">Play</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-entertainment.edgeone.app" class="card" data-category="entertainment">
+      <div class="card-icon" style="background:#f97316;color:#fff">🎬</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Entertainment</div>
+        <div class="card-desc">Movies (TMDB), Music (iTunes), Games (RAWG)</div>
+        <div class="card-tags">
+          <span class="card-tag">Movies</span>
+          <span class="card-tag">Music</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-jokes.edgeone.app" class="card" data-category="entertainment">
+      <div class="card-icon" style="background:#f97316;color:#fff">😂</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Jokes</div>
+        <div class="card-desc">Humor, puns, riddles, and fun facts</div>
+        <div class="card-tags">
+          <span class="card-tag">Humor</span>
+          <span class="card-tag">Riddles</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-reddit.edgeone.app" class="card" data-category="entertainment">
+      <div class="card-icon" style="background:#ff4500;color:#fff">📱</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Reddit</div>
+        <div class="card-desc">Reddit content and discussions</div>
+        <div class="card-tags">
+          <span class="card-tag">Reddit</span>
+          <span class="card-tag">Social</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Lifestyle -->
+    <div class="section-header">Lifestyle</div>
+    <a href="https://ada-coffee.edgeone.app" class="card" data-category="lifestyle">
+      <div class="card-icon" style="background:#a16207;color:#fff">☕</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Coffee</div>
+        <div class="card-desc">Weather, maps, and coffee shop locations</div>
+        <div class="card-tags">
+          <span class="card-tag">Weather</span>
+          <span class="card-tag">Maps</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-cooking.edgeone.app" class="card" data-category="lifestyle">
+      <div class="card-icon" style="background:#ea580c;color:#fff">🍳</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Cooking</div>
+        <div class="card-desc">Recipes (TheMealDB) and nutrition info</div>
+        <div class="card-tags">
+          <span class="card-tag">Recipes</span>
+          <span class="card-tag">Nutrition</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-health.edgeone.app" class="card" data-category="lifestyle">
+      <div class="card-icon" style="background:#22c55e;color:#fff">💪</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Health</div>
+        <div class="card-desc">Fitness, nutrition, and wellness tips</div>
+        <div class="card-tags">
+          <span class="card-tag">Fitness</span>
+          <span class="card-tag">Wellness</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-travel.edgeone.app" class="card" data-category="lifestyle">
+      <div class="card-icon" style="background:#0ea5e9;color:#fff">✈️</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Travel</div>
+        <div class="card-desc">Weather, countries, and travel tips</div>
+        <div class="card-tags">
+          <span class="card-tag">Travel</span>
+          <span class="card-tag">Weather</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-weather.edgeone.app" class="card" data-category="lifestyle">
+      <div class="card-icon" style="background:#3b82f6;color:#fff">🌤️</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Weather</div>
+        <div class="card-desc">Weather forecasts for any city worldwide</div>
+        <div class="card-tags">
+          <span class="card-tag">Weather</span>
+          <span class="card-tag">Forecast</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Creative -->
+    <div class="section-header">Creative</div>
+    <a href="https://ada-art.edgeone.app" class="card" data-category="creative">
+      <div class="card-icon" style="background:#ec4899;color:#fff">🎨</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Art</div>
+        <div class="card-desc">Paintings, artists, and museums (Met Museum)</div>
+        <div class="card-tags">
+          <span class="card-tag">Art</span>
+          <span class="card-tag">Museums</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-quotes.edgeone.app" class="card" data-category="creative">
+      <div class="card-icon" style="background:#f59e0b;color:#fff">💭</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Quotes</div>
+        <div class="card-desc">Inspirational quotes and wisdom</div>
+        <div class="card-tags">
+          <span class="card-tag">Quotes</span>
+          <span class="card-tag">Inspiration</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Information -->
+    <div class="section-header">Information & Data</div>
+    <a href="https://ada-sports.edgeone.app" class="card" data-category="information">
+      <div class="card-icon" style="background:#16a34a;color:#fff">⚽</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Sports</div>
+        <div class="card-desc">NFL, NBA, Premier League, MLB, NHL teams</div>
+        <div class="card-tags">
+          <span class="card-tag">Sports</span>
+          <span class="card-tag">Teams</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-finance.edgeone.app" class="card" data-category="information">
+      <div class="card-icon" style="background:#059669;color:#fff">💰</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Finance</div>
+        <div class="card-desc">Crypto (CoinGecko) and currency exchange</div>
+        <div class="card-tags">
+          <span class="card-tag">Crypto</span>
+          <span class="card-tag">Finance</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-history.edgeone.app" class="card" data-category="information">
+      <div class="card-icon" style="background:#a855f7;color:#fff">📜</div>
+      <div class="card-content">
+        <div class="card-title">Ada.History</div>
+        <div class="card-desc">Historical events, figures, and eras</div>
+        <div class="card-tags">
+          <span class="card-tag">History</span>
+          <span class="card-tag">Events</span>
+        </div>
+      </div>
+    </a>
+    <a href="https://ada-astronomy.edgeone.app" class="card" data-category="information">
+      <div class="card-icon" style="background:#6366f1;color:#fff">🌌</div>
+      <div class="card-content">
+        <div class="card-title">Ada.Astronomy</div>
+        <div class="card-desc">Solar system, black holes, galaxies, stars</div>
+        <div class="card-tags">
+          <span class="card-tag">Space</span>
+          <span class="card-tag">Planets</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <footer style="margin-top:48px;padding:24px 0;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:13px">
+    <p>Ada.Hub – Central hub for all Ada versions</p>
+    <p style="margin-top:4px">Built with ❤️ for diverse conversations</p>
+  </footer>
+</div>
+
+<script>
+let currentCategory='all';
+
+function filterCategory(cat){
+  currentCategory=cat;
+  document.querySelectorAll('.cat-btn').forEach(btn=>btn.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  const cards=document.querySelectorAll('.card');
+  cards.forEach(card=>{
+    if(cat==='all'||card.dataset.category===cat){
+      card.style.display='block';
+    }else{
+      card.style.display='none';
+    }
+  });
+}
+
+function filterCards(){
+  const query=document.getElementById('searchInput').value.toLowerCase();
+  const cards=document.querySelectorAll('.card');
+  
+  cards.forEach(card=>{
+    const title=card.querySelector('.card-title').textContent.toLowerCase();
+    const desc=card.querySelector('.card-desc').textContent.toLowerCase();
+    const tags=Array.from(card.querySelectorAll('.card-tag')).map(t=>t.textContent.toLowerCase()).join(' ');
+    
+    const matches=query===''||title.includes(query)||desc.includes(query)||tags.includes(query);
+    const categoryMatch=currentCategory==='all'||card.dataset.category===currentCategory;
+    
+    card.style.display=(matches&&categoryMatch)?'block':'none';
+  });
+}
+</script>
+</body>
+</html>

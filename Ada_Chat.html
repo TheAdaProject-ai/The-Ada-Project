@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ada.Chat – Website Chatbot</title>
+<link rel="icon" type="image/png" href="Icons/Ada.Chat.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#0891b2;--accent-dark:#0e7490;--accent-muted:#cffafe;
+  --bg:#fafafa;--surface:#ffffff;--surface2:#f4f4f5;
+  --border:#e4e4e7;--border2:#d4d4d8;
+  --text:#18181b;--muted:#71717a;--hint:#a1a1aa;
+  --user-bg:#0891b2;--ada-bg:#ffffff;
+  --code-bg:#18181b;--code-text:#e4e4e7;
+  --radius:10px;--radius-lg:14px;
+  --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace;
+}
+[data-theme="dark"]{
+  --bg:#09090b;--surface:#18181b;--surface2:#27272a;
+  --border:#3f3f46;--border2:#52525b;
+  --text:#fafafa;--muted:#a1a1aa;--hint:#71717a;
+  --ada-bg:#27272a;--accent-muted:#164e63;
+  --shadow:0 1px 4px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+}
+html{font-size:15px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.65;-webkit-font-smoothing:antialiased}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-top{padding:16px;border-bottom:1px solid var(--border)}
+.new-btn{width:100%;padding:10px 14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font:500 13px var(--font);cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .15s}
+.new-btn:hover{background:var(--accent-dark)}
+.new-btn svg{width:14px;height:14px;flex-shrink:0}
+.conv-list{flex:1;overflow-y:auto;padding:8px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.conv-item{padding:10px 12px;border-radius:var(--radius);cursor:pointer;transition:background .12s;margin-bottom:2px;font-size:12.5px;color:var(--muted);line-height:1.4;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid transparent}
+.conv-item:hover{background:var(--surface2);color:var(--text)}
+.conv-item.active{background:var(--accent-muted);color:var(--accent);border-color:var(--accent-muted)}
+[data-theme="dark"] .conv-item.active{background:#164e63;color:#67e8f9;border-color:#164e63}
+.conv-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.conv-date{font-size:11px;color:var(--hint);flex-shrink:0}
+.conv-actions{display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.conv-item:hover .conv-actions{opacity:1}
+.conv-act-btn{background:none;border:none;cursor:pointer;padding:4px;border-radius:6px;color:var(--hint);font-size:13px;line-height:1;transition:all .12s}
+.conv-act-btn:hover{background:var(--border);color:var(--text)}
+/* Config panel */
+.config-panel{border-top:1px solid var(--border);padding:12px 16px}
+.config-label{font-size:11px;font-weight:600;color:var(--hint);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.config-field{margin-bottom:10px}
+.config-field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:500}
+.config-field input,.config-field textarea{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;font:13px var(--font);background:var(--surface2);color:var(--text);outline:none;transition:border-color .15s;resize:none}
+.config-field input:focus,.config-field textarea:focus{border-color:var(--accent)}
+.config-field textarea{min-height:80px;line-height:1.5}
+.save-cfg-btn{width:100%;padding:8px;background:var(--accent);color:#fff;border:none;border-radius:7px;font:500 12.5px var(--font);cursor:pointer;transition:background .15s}
+.save-cfg-btn:hover{background:var(--accent-dark)}
+.cfg-saved{text-align:center;font-size:11.5px;color:var(--accent);margin-top:6px;opacity:0;transition:opacity .3s}
+.cfg-saved.show{opacity:1}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+header{display:flex;align-items:center;gap:14px;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.logo-mark{width:36px;height:36px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:16px;flex-shrink:0}
+.bot-name-display{font-size:15px;font-weight:600;color:var(--text);line-height:1.1}
+.header-sub{font-size:11.5px;color:var(--muted);line-height:1}
+.hdr-btns{margin-left:auto;display:flex;align-items:center;gap:6px}
+.hdr-btn{width:34px;height:34px;border:1px solid var(--border);background:transparent;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;font-size:15px}
+.hdr-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.chat-area{flex:1;overflow-y:auto;padding:28px 0;scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.chat-inner{max-width:720px;margin:0 auto;padding:0 24px;display:flex;flex-direction:column;gap:20px}
+.welcome{padding:32px 0 16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.welcome-mark{width:64px;height:64px;border-radius:16px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:26px;margin-bottom:8px}
+.welcome h2{font-size:22px;font-weight:600;color:var(--text)}
+.welcome p{font-size:14px;color:var(--muted);max-width:420px;line-height:1.6}
+.chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:12px}
+.chip{padding:7px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:12.5px;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.chip:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.msg{display:flex;gap:10px;align-items:flex-start;max-width:88%}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg.ada{align-self:flex-start}
+.msg-av{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.msg-av.user-av{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.msg-body{display:flex;flex-direction:column;gap:5px;min-width:0}
+.bubble{padding:12px 16px;border-radius:var(--radius-lg);font-size:14.5px;line-height:1.65;word-break:break-word}
+.msg.ada .bubble{background:var(--ada-bg);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:4px;box-shadow:var(--shadow)}
+.msg.user .bubble{background:var(--user-bg);color:#fff;border-bottom-right-radius:4px}
+.msg-meta{font-size:11px;color:var(--hint);padding:0 4px}
+.msg.user .msg-meta{text-align:right}
+.typing-bubble{padding:12px 18px;background:var(--ada-bg);border:1px solid var(--border);border-radius:var(--radius-lg);border-bottom-left-radius:4px;box-shadow:var(--shadow);display:flex;gap:5px;align-items:center}
+.typing-dot{width:7px;height:7px;background:var(--hint);border-radius:50%;animation:bounce 1.3s infinite}
+.typing-dot:nth-child(2){animation-delay:.18s}
+.typing-dot:nth-child(3){animation-delay:.36s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-6px);opacity:1}}
+.input-area{padding:16px 24px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.input-wrap{max-width:720px;margin:0 auto}
+.input-box{display:flex;gap:8px;align-items:flex-end;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:8px 8px 8px 16px;transition:border-color .15s}
+.input-box:focus-within{border-color:var(--accent)}
+textarea{flex:1;resize:none;border:none;background:transparent;font:14.5px/1.5 var(--font);outline:none;color:var(--text);min-height:24px;max-height:130px;overflow-y:auto;scrollbar-width:thin;padding:4px 0}
+textarea::placeholder{color:var(--hint)}
+.send-btn{width:36px;height:36px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.send-btn:hover{background:var(--accent-dark);transform:scale(1.04)}
+.send-btn:active{transform:scale(.97)}
+.send-btn svg{width:16px;height:16px}
+.input-hint{font-size:11.5px;color:var(--hint);margin-top:8px;text-align:center}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:all .25s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <button class="new-btn" onclick="newChat()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+        New conversation
+      </button>
+    </div>
+    <div class="conv-list" id="convList"></div>
+    <!-- Business config panel -->
+    <div class="config-panel">
+      <div class="config-label">Business Config</div>
+      <div class="config-field">
+        <label>Bot name</label>
+        <input id="cfgName" type="text" placeholder="e.g. Acme Support">
+      </div>
+      <div class="config-field">
+        <label>Business info (paste your FAQ or context)</label>
+        <textarea id="cfgContext" placeholder="e.g. We are open Mon–Fri 9am–5pm. Returns accepted within 30 days…"></textarea>
+      </div>
+      <button class="save-cfg-btn" onclick="saveConfig()">Save config</button>
+      <div class="cfg-saved" id="cfgSaved">✓ Saved</div>
+    </div>
+  </div>
+  <div class="main">
+    <header>
+      <img src="The Ada Project - Logo.png" alt="Ada Logo" class="logo-mark">
+      <div>
+        <div class="bot-name-display" id="botNameDisplay">Ada.Chat</div>
+        <div class="header-sub">Website Chatbot</div>
+      </div>
+      <div class="hdr-btns">
+        <button class="hdr-btn" onclick="toggleDark()" id="darkBtn">🌙</button>
+      </div>
+    </header>
+    <div class="chat-area" id="chatArea">
+      <div class="chat-inner" id="chatInner"></div>
+    </div>
+    <div class="input-area">
+      <div class="input-wrap">
+        <div class="input-box">
+          <textarea id="msgInput" rows="1" placeholder="Ask a question…" oninput="autoGrow(this)"></textarea>
+          <button class="send-btn" onclick="send()">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="2" x2="6" y2="10"/><polyline points="14 2 9 14 6 10 2 7 14 2"/></svg>
+          </button>
+        </div>
+        <div class="input-hint">Enter to send · Shift+Enter for new line</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+let dark=false,convs=[],curId=null,busy=false;
+let botName='Ada.Chat',businessContext='';
+const cache={dict:{}};
+
+document.getElementById('msgInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+if(localStorage.getItem('ada-chat-dark')==='1')toggleDark();
+loadConfig();loadConvs();if(!curId)newChat();
+
+function loadConfig(){
+  const saved=localStorage.getItem('ada-chat-config');
+  if(saved){const c=JSON.parse(saved);botName=c.name||'Ada.Chat';businessContext=c.context||'';}
+  document.getElementById('cfgName').value=botName;
+  document.getElementById('cfgContext').value=businessContext;
+  document.getElementById('botNameDisplay').textContent=botName;
+  document.getElementById('logoMark').textContent=botName.charAt(0).toUpperCase();
+}
+function saveConfig(){
+  botName=document.getElementById('cfgName').value.trim()||'Ada.Chat';
+  businessContext=document.getElementById('cfgContext').value.trim();
+  localStorage.setItem('ada-chat-config',JSON.stringify({name:botName,context:businessContext}));
+  document.getElementById('botNameDisplay').textContent=botName;
+  document.getElementById('logoMark').textContent=botName.charAt(0).toUpperCase();
+  const s=document.getElementById('cfgSaved');s.classList.add('show');setTimeout(()=>s.classList.remove('show'),2000);
+}
+function toggleDark(){dark=!dark;document.documentElement.setAttribute('data-theme',dark?'dark':'');document.getElementById('darkBtn').textContent=dark?'☀️':'🌙';localStorage.setItem('ada-chat-dark',dark?'1':'0');}
+function loadConvs(){const s=localStorage.getItem('ada-chat-convs');if(s){convs=JSON.parse(s);renderConvs();}}
+function saveConvs(){localStorage.setItem('ada-chat-convs',JSON.stringify(convs));}
+function fmtDate(iso){const d=new Date(iso),now=new Date();if(d.toDateString()===now.toDateString())return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});return d.toLocaleDateString([],{month:'short',day:'numeric'});}
+function renderConvs(){
+  const el=document.getElementById('convList');
+  if(!convs.length){el.innerHTML='<div style="padding:12px;font-size:12px;color:var(--hint);text-align:center">No conversations yet</div>';return;}
+  el.innerHTML=convs.map(c=>`<div class="conv-item${c.id===curId?' active':''}" onclick="loadConv('${c.id}')"><div class="conv-title">${esc(c.title||'New conversation')}</div><div style="display:flex;align-items:center;gap:4px;flex-shrink:0"><div class="conv-date">${fmtDate(c.date)}</div><div class="conv-actions"><button class="conv-act-btn" onclick="event.stopPropagation();dlConv('${c.id}')">⬇</button><button class="conv-act-btn" onclick="event.stopPropagation();delConv('${c.id}')">✕</button></div></div></div>`).join('');
+}
+function newChat(){curId=Date.now().toString();convs.unshift({id:curId,title:'New conversation',date:new Date().toISOString(),msgs:[]});saveConvs();renderConvs();document.getElementById('chatInner').innerHTML='';showWelcome();}
+function loadConv(id){curId=id;const c=convs.find(x=>x.id===id);if(!c)return;document.getElementById('chatInner').innerHTML='';hideWelcome();c.msgs.forEach(m=>appendMsg(m.text,m.role,false));renderConvs();scrollBot();}
+function saveMsg(text,role){if(!curId)newChat();const c=convs.find(x=>x.id===curId);if(c){c.msgs.push({text,role});if(c.msgs.length===1||c.title==='New conversation')c.title=text.slice(0,38)+(text.length>38?'…':'');saveConvs();renderConvs();}}
+function delConv(id){convs=convs.filter(x=>x.id!==id);saveConvs();if(curId===id){curId=null;newChat();}else renderConvs();}
+function dlConv(id){const c=convs.find(x=>x.id===id);if(!c)return;let t=`${botName}: ${c.title}\nDate: ${new Date(c.date).toLocaleString()}\n${'─'.repeat(40)}\n\n`;c.msgs.forEach(m=>{t+=`[${m.role==='ada'?botName:'Customer'}]: ${m.text}\n\n`;});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/plain'}));a.download=`chat-${c.title.replace(/[^a-z0-9]/gi,'-')}.txt`;a.click();}
+
+function showWelcome(){
+  const name=botName;
+  document.getElementById('chatInner').innerHTML=`<div class="welcome"><div class="welcome-mark">${esc(name.charAt(0))}</div><h2>Welcome to ${esc(name)}</h2><p>How can I help you today? You can ask about our hours, products, support, or anything else.</p><div class="chips"><span class="chip" onclick="qs('What are your business hours?')">🕐 Hours</span><span class="chip" onclick="qs('What products do you offer?')">📦 Products</span><span class="chip" onclick="qs('How can I contact support?')">📞 Support</span><span class="chip" onclick="qs('What is your return policy?')">↩ Returns</span><span class="chip" onclick="qs('Tell me about pricing')">💰 Pricing</span><span class="chip" onclick="qs('Where are you located?')">📍 Location</span></div></div>`;
+}
+function hideWelcome(){const w=document.getElementById('chatInner').querySelector('.welcome');if(w)w.remove();}
+
+async function send(){
+  if(busy)return;
+  const inp=document.getElementById('msgInput');const text=inp.value.trim();if(!text)return;
+  busy=true;document.querySelector('.send-btn').disabled=true;
+  hideWelcome();appendMsg(text,'user');saveMsg(text,'user');inp.value='';inp.style.height='auto';
+  const ty=appendTyping();
+  try{
+    await new Promise(r=>setTimeout(r,300+Math.random()*300));
+    const r=respond(text);ty.remove();appendMsg(r,'ada');saveMsg(r,'ada');
+  }catch(e){ty.remove();appendMsg('Something went wrong — please try again. 😕','ada');}
+  finally{busy=false;document.querySelector('.send-btn').disabled=false;}
+}
+function qs(t){document.getElementById('msgInput').value=t;send();}
+
+function appendMsg(text,role,doScroll=true){
+  const ci=document.getElementById('chatInner');
+  const w=document.createElement('div');w.className=`msg ${role}`;
+  const initial=botName.charAt(0).toUpperCase();
+  const av=document.createElement('div');av.className=role==='ada'?'msg-av':'msg-av user-av';av.textContent=role==='ada'?initial:'U';
+  const body=document.createElement('div');body.className='msg-body';
+  const bub=document.createElement('div');bub.className='bubble';
+  if(role==='ada')bub.innerHTML=renderMd(text);else bub.textContent=text;
+  const meta=document.createElement('div');meta.className='msg-meta';meta.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  body.appendChild(bub);body.appendChild(meta);w.appendChild(av);w.appendChild(body);ci.appendChild(w);
+  if(doScroll)scrollBot();
+}
+function appendTyping(){
+  const ci=document.getElementById('chatInner');const initial=botName.charAt(0).toUpperCase();
+  const w=document.createElement('div');w.className='msg ada';
+  w.innerHTML=`<div class="msg-av">${esc(initial)}</div><div class="msg-body"><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  ci.appendChild(w);scrollBot();return w;
+}
+function scrollBot(){requestAnimationFrame(()=>{const ca=document.getElementById('chatArea');ca.scrollTop=ca.scrollHeight;});}
+function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,130)+'px';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+let toastT;
+function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2500);}
+function renderMd(text){
+  text=text.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  text=text.replace(/\n/g,'<br>');
+  return text;
+}
+async function apiDict(word){if(cache.dict[word])return cache.dict[word];try{const r=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);if(r.ok){const d=await r.json();cache.dict[word]=d;return d;}}catch(_){}return null;}
+async function getWordContext(word){const d=await apiDict(word);if(!d||!d[0])return null;const entry=d[0];const pos=entry.meanings?.[0]?.partOfSpeech||'unknown';const meaning=entry.meanings?.[0]?.definitions?.[0]?.definition||'definition not found';return{word:entry.word,phonetic:entry.phonetic,pos,meaning};}
+async function apiThesaurus(word){
+  if(cache.thesaurus?.[word])return cache.thesaurus[word];
+  try{
+    const r=await fetch(`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(word)}&max=10`);
+    if(r.ok){
+      const d=await r.json();
+      if(!cache.thesaurus)cache.thesaurus={};
+      cache.thesaurus[word]=d;
+      return d;
+    }
+  }catch(_){}
+  return null;
+}
+const ABBREVIATIONS={'hru':'how are you','hmu':'hit me up','nm':'not much','nvm':'never mind','brb':'be right back','btw':'by the way','imo':'in my opinion','tbh':'to be honest','idk':'i do not know','ikr':'i know right','lol':'laugh out loud','omg':'oh my god','smh':'shaking my head','ttyl':'talk to you later','ngl':'not gonna lie','rn':'right now','afaik':'as far as i know','bbl':'be back later','cu':'see you','g2g':'got to go','ic':'i see','k':'okay','lmk':'let me know','nbd':'no big deal','plz':'please','thx':'thanks','u':'you','ur':'your','w/':'with','w/o':'without','y':'why'};
+function expandAbbreviations(text){let result=text.toLowerCase();for(const[abbr,full]of Object.entries(ABBREVIATIONS)){result=result.replace(new RegExp(`\\b${abbr}\\b`,'gi'),full);}return result;}
+async function spellCheck(word){
+  if(cache.spell?.[word])return cache.spell[word];
+  try{
+    const r=await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(word)}&max=5`);
+    if(r.ok){
+      const d=await r.json();
+      if(!cache.spell)cache.spell={};
+      cache.spell[word]=d;
+      return d;
+    }
+  }catch(_){}
+  return null;
+}
+
+const API_KEYS={
+  groq:'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',
+  anthropic:'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',
+  gemini:'AIzaSyA_SJwG5UphsMW-1LVCIWFt7sZVMf5zKRg',
+  openai:'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'
+};
+const LEARNING_KEY='ada_chat_learning';
+
+async function callAIAPI(userMessage, context='You are a customer service assistant. Answer briefly and clearly in 2-3 sentences.'){
+  const providers=[
+    {
+      name:'groq',
+      url:'https://api.groq.com/openai/v1/chat/completions',
+      headers:{'Authorization':`Bearer ${API_KEYS.groq}`,'Content-Type':'application/json'},
+      body:{model:'llama-3.3-70b-versatile',messages:[{role:'system',content:context},{role:'user',content:userMessage}],max_tokens:500,temperature:0.7},
+      extract:(d)=>d.choices?.[0]?.message?.content
+    },
+    {
+      name:'anthropic',
+      url:'https://api.anthropic.com/v1/messages',
+      headers:{'x-api-key':API_KEYS.anthropic,'Content-Type':'application/json','anthropic-version':'2023-06-01'},
+      body:{model:'claude-3-5-sonnet-20241022',max_tokens:500,system:context,messages:[{role:'user',content:userMessage}]},
+      extract:(d)=>d.content?.[0]?.text
+    },
+    {
+      name:'gemini',
+      url:`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEYS.gemini}`,
+      headers:{'Content-Type':'application/json'},
+      body:{contents:[{parts:[{text:context+'\n\n'+userMessage}]}]},
+      extract:(d)=>d.candidates?.[0]?.content?.parts?.[0]?.text
+    },
+    {
+      name:'openai',
+      url:'https://api.openai.com/v1/chat/completions',
+      headers:{'Authorization':`Bearer ${API_KEYS.openai}`,'Content-Type':'application/json'},
+      body:{model:'gpt-4o-mini',messages:[{role:'system',content:context},{role:'user',content:userMessage}],max_tokens:500,temperature:0.7},
+      extract:(d)=>d.choices?.[0]?.message?.content
+    }
+  ];
+
+  for(const provider of providers){
+    try{
+      const response=await fetch(provider.url,{
+        method:'POST',
+        headers:provider.headers,
+        body:JSON.stringify(provider.body)
+      });
+      const data=await response.json();
+      const aiResponse=provider.extract(data);
+      if(aiResponse){
+        const learned=JSON.parse(localStorage.getItem(LEARNING_KEY)||'{}');
+        const key=userMessage.toLowerCase().trim().substring(0,50);
+        learned[key]=aiResponse;
+        localStorage.setItem(LEARNING_KEY,JSON.stringify(learned));
+        return aiResponse;
+      }
+    }catch(e){
+      console.error(`${provider.name} API error:`,e);
+    }
+  }
+  return null;
+}
+
+async function respond(raw){
+  const msg=raw.toLowerCase().trim();
+  const ctx=businessContext.toLowerCase();
+  const name=botName;
+  
+  const learned=JSON.parse(localStorage.getItem(LEARNING_KEY)||'{}');
+  for(const[k,v]of Object.entries(learned)){
+    if(msg.includes(k.toLowerCase()))return v+' (learned)';
+  }
+
+  // Search business context first
+  if(businessContext){
+    const words=msg.split(/\s+/).filter(w=>w.length>3);
+    for(const word of words){
+      if(ctx.includes(word)){
+        const idx=ctx.indexOf(word);
+        const snippet=businessContext.substring(Math.max(0,idx-100),idx+300).trim();
+        const sentences=snippet.match(/[^.!?\n]+[.!?\n]+/g)||[snippet];
+        const relevant=sentences.filter(s=>words.some(w=>s.toLowerCase().includes(w))).slice(0,3);
+        if(relevant.length)return relevant.join(' ').trim();
+      }
+    }
+  }
+
+  // Greeting
+  const GREETINGS={'hi':`Hello! Welcome to ${name}. How can I help you today? 👋`,'hello':`Hello! Welcome to ${name}. How can I help you today? 👋`,'hey':`Hey! Welcome to ${name}. How can I help you today? 👋`,'good morning':`Good morning! Welcome to ${name}. How can I help you today? 👋`,'good afternoon':`Good afternoon! Welcome to ${name}. How can I help you today? 👋`,'good evening':`Good evening! Welcome to ${name}. How can I help you today? 👋`,'how are you':`I'm doing great, thank you for asking! How can I help you today? 😊`,'how are ya':`I'm doing great, thank you for asking! How can I help you today? 😊`,'how are you doing':`I'm doing great, thank you for asking! How can I help you today? 😊`};
+  for(const[k,v]of Object.entries(GREETINGS)){const re=new RegExp(`\\b${k}\\b`,'i');if(re.test(msg)){const remaining=msg.replace(re,'').trim().toLowerCase();if(remaining.length<5||/^(how|what|who|where|when|why|are|you|doing|up|is|was|were|it|this|that|there|here|good|bad|ok|okay|thanks|thank|please|yes|no|maybe|sure|alright|cool|great|awesome|nice|fine|well|so|and|or|but|just|now|today|tonight|tomorrow|yesterday|morning|evening|afternoon|night|day|week|month|year|time|about|with|for|to|from|of|in|on|at|by|the|a|an)$/i.test(remaining))return v;}}
+
+  // Hours / availability
+  if(/hours|open|close|when|schedule|available/.test(msg)){
+    if(businessContext&&ctx.match(/\d+(am|pm)|hours?|open/))return`Please check the information I have about our hours. For the most accurate information, feel free to contact us directly.`;
+    return`Our business hours aren't set up yet in my configuration — please contact us directly for our current hours.`;
+  }
+
+  // Products / services
+  if(/product|service|offer|sell|buy|purchase/.test(msg)){
+    if(businessContext)return`Based on our information: we'd be happy to help with products and services. For a full list or specific details, please reach out to our team directly.`;
+    return`I can help with product information once it's been configured. Please contact the business directly for details on our offerings.`;
+  }
+
+  // Support / contact
+  if(/support|contact|help|phone|email|reach/.test(msg)){
+    if(businessContext&&(ctx.includes('email')||ctx.includes('phone')||ctx.includes('contact'))){
+      const emailM=businessContext.match(/[\w.]+@[\w.]+\.\w+/);
+      const phoneM=businessContext.match(/[\+\d][\d\s\-\(\)]{7,}/);
+      if(emailM||phoneM){
+        let resp='📞 Here are our contact details:\n\n';
+        if(emailM)resp+=`• **Email:** ${emailM[0]}\n`;
+        if(phoneM)resp+=`• **Phone:** ${phoneM[0]}`;
+        return resp;
+      }
+    }
+    return`For support, please contact our team directly. I'm here for general questions in the meantime! 🤝`;
+  }
+
+  // Returns / refunds
+  if(/return|refund|exchange|policy/.test(msg)){
+    if(businessContext&&ctx.match(/return|refund/))return`Our return policy is part of my configuration. For specific cases or to start a return, please reach out to our support team.`;
+    return`Our return policy details aren't configured yet. Please contact us directly — we'll be happy to help resolve any issues.`;
+  }
+
+  // Pricing
+  if(/price|cost|pricing|fee|charge|rate|how much/.test(msg)){
+    if(businessContext&&ctx.match(/\$|price|cost/))return`Pricing information is available in our product listings. For a custom quote, please contact our sales team.`;
+    return`For current pricing, please visit our website or contact us directly — we'll find the right option for you. 💰`;
+  }
+
+  // Location
+  if(/location|address|where|directions|find you/.test(msg)){
+    if(businessContext&&(ctx.match(/\d+.*street|avenue|road|blvd|suite/i)||ctx.includes('located'))){
+      const addrM=businessContext.match(/\d+[^.!?\n]+(?:street|avenue|road|boulevard|drive|lane|suite)[^.!?\n]*/i);
+      if(addrM)return`📍 You can find us at: **${addrM[0].trim()}**`;
+    }
+    return`Our address isn't in my configuration yet. Please check our website or contact us for directions.`;
+  }
+
+  // Thanks
+  if(/thanks?|thank you/.test(msg))return`You're welcome! Is there anything else I can help with? 😊`;
+
+  // Translation
+  const LANG_MAP={french:'fr',spanish:'es',german:'de',italian:'it',portuguese:'pt',japanese:'ja',chinese:'zh',russian:'ru',arabic:'ar',korean:'ko',dutch:'nl',polish:'pl',turkish:'tr',hindi:'hi',swedish:'sv',ukrainian:'uk',finnish:'fi',norwegian:'no',danish:'da',greek:'el',hebrew:'he',czech:'cs',romanian:'ro',hungarian:'hu',thai:'th',vietnamese:'vi',indonesian:'id',malay:'ms',persian:'fa',catalan:'ca',latin:'la',english:'en'};
+  const LANG_NAMES={fr:'French',es:'Spanish',de:'German',it:'Italian',pt:'Portuguese',ja:'Japanese',zh:'Chinese',ru:'Russian',ar:'Arabic',ko:'Korean',nl:'Dutch',pl:'Polish',tr:'Turkish',hi:'Hindi',sv:'Swedish',uk:'Ukrainian',fi:'Finnish',no:'Norwegian',da:'Danish',el:'Greek',he:'Hebrew',cs:'Czech',ro:'Romanian',hu:'Hungarian',th:'Thai',vi:'Vietnamese',id:'Indonesian',ms:'Malay',fa:'Persian',ca:'Catalan',la:'Latin',en:'English'};
+  const tM=raw.match(/translate\s+["']?(.+?)["']?\s+(?:to|into)\s+(\w+)/i)||raw.match(/(?:how do you say|say)\s+["']?(.+?)["']?\s+(?:in|to)\s+(\w+)/i)||raw.match(/what is\s+["']?(.+?)["']?\s+(?:in)\s+(\w+)/i)||raw.match(/translate\s+["']?(.+?)["']?\s+(?:from\s+english\s+)?to\s+(\w+)/i);
+  if(tM){const[,tText,tLang]=tM;const code=LANG_MAP[tLang.toLowerCase()];if(code){try{const r=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(tText)}&langpair=en|${code}`);const d=await r.json();const t=d.responseData?.translatedText;if(t&&d.responseStatus===200)return`🌐 **"${tText}"** in **${LANG_NAMES[code]||tLang}:**\n\n> ${t}`;}catch(_){}}return`Supported languages: ${Object.keys(LANG_MAP).join(', ')}. Try: *"Translate hello to Spanish"*`;}
+
+  // Goodbye
+  if(/bye|goodbye|see you|take care/.test(msg))return`Goodbye! Have a great day. Feel free to come back anytime. 👋`;
+
+  // News API (NewsAPI)
+  if(/news|headlines|breaking news|latest news/i.test(msg)){
+    try{
+      const r=await fetch('https://newsapi.org/v2/top-headlines?country=us&apiKey=YOUR_API_KEY');
+      if(r.ok){
+        const d=await r.json();
+        if(d?.articles?.length){
+          let out='📰 **Top Headlines**\n\n';
+          d.articles.slice(0,5).forEach(a=>{
+            out+=`• <strong>${esc(a.title||'No title')}</strong><br><em>${esc(a.description?.substring(0,100)||'')}...</em><br><a href="${a.url}" target="_blank" style="color:var(--accent)">Read more →</a><br><br>`;
+          });
+          return out;
+        }
+      }
+    }catch(_){}
+    return "News service requires an API key. Visit newsapi.org to get one and configure it in the code.";
+  }
+  
+  const aiResponse=await callAIAPI(raw);
+  if(aiResponse)return aiResponse;
+
+  return pick([
+    `Thanks for reaching out to ${name}! For detailed assistance with that, please contact our team directly and we'll be happy to help. 🤝`,
+    `Great question! For the most accurate information, I recommend contacting us directly. Is there anything else I can help with?`,
+    `I want to make sure you get the right answer. Our team would be best placed to help with that — would you like contact information?`,
+  ]);
+}
+</script>
+</body>
+</html>
