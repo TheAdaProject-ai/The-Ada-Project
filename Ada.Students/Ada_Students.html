@@ -293,8 +293,8 @@ function solveMath(msg){
 async function respond(raw){
   const msg=raw.toLowerCase().trim();
 
-  if(/^(hi|hello|hey)[\s!]*$/.test(msg))return pick(["Hello! What would you like to learn today? 📚","Hi there! I'm here to help you with any subject. What are you studying? 🎓"]);
-  if(/^(thanks?|thank you)[\s!]*$/.test(msg))return"You're welcome! Let me know if there's anything else to work through. 😊";
+  const GREETINGS={'hi':["Hello! What would you like to learn today? 📚","Hi there! I'm here to help you with any subject. What are you studying? 🎓"],'hello':["Hello! What would you like to learn today? 📚","Hi there! I'm here to help you with any subject. What are you studying? 🎓"],'hey':["Hello! What would you like to learn today? 📚","Hi there! I'm here to help you with any subject. What are you studying? 🎠"],'thanks':["You're welcome! Let me know if there's anything else to work through. 😊"],'thank you':["You're welcome! Let me know if there's anything else to work through. 😊"]};
+  for(const[k,arr]of Object.entries(GREETINGS)){const re=new RegExp(`\\b${k}\\b`,'i');if(re.test(msg)){const remaining=msg.replace(re,'').trim().toLowerCase();if(remaining.length<5||/^(how|what|who|where|when|why|are|you|doing|up|is|was|were|it|this|that|there|here|good|bad|ok|okay|please|yes|no|maybe|sure|alright|cool|great|awesome|nice|fine|well|so|and|or|but|just|now|today|tonight|tomorrow|yesterday|morning|evening|afternoon|night|day|week|month|year|time|about|with|for|to|from|of|in|on|at|by|the|a|an)$/i.test(remaining))return pick(arr);}}
   if(/study tips?|how to study|revision tips?/.test(msg))return STUDY_TIPS;
 
   // Algebra solving

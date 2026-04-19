@@ -264,7 +264,8 @@ function respond(raw){
   }
 
   // Greeting
-  if(/^(hi|hello|hey|good morning|good afternoon|good evening)[\s!]*$/.test(msg))return`Hello! Welcome to ${name}. How can I help you today? 👋`;
+  const GREETINGS={'hi':`Hello! Welcome to ${name}. How can I help you today? 👋`,'hello':`Hello! Welcome to ${name}. How can I help you today? 👋`,'hey':`Hey! Welcome to ${name}. How can I help you today? 👋`,'good morning':`Good morning! Welcome to ${name}. How can I help you today? 👋`,'good afternoon':`Good afternoon! Welcome to ${name}. How can I help you today? 👋`,'good evening':`Good evening! Welcome to ${name}. How can I help you today? 👋`};
+  for(const[k,v]of Object.entries(GREETINGS)){const re=new RegExp(`\\b${k}\\b`,'i');if(re.test(msg)){const remaining=msg.replace(re,'').trim().toLowerCase();if(remaining.length<5||/^(how|what|who|where|when|why|are|you|doing|up|is|was|were|it|this|that|there|here|good|bad|ok|okay|thanks|thank|please|yes|no|maybe|sure|alright|cool|great|awesome|nice|fine|well|so|and|or|but|just|now|today|tonight|tomorrow|yesterday|morning|evening|afternoon|night|day|week|month|year|time|about|with|for|to|from|of|in|on|at|by|the|a|an)$/i.test(remaining))return v;}}
 
   // Hours / availability
   if(/hours|open|close|when|schedule|available/.test(msg)){

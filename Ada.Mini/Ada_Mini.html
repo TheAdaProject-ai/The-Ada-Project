@@ -264,7 +264,7 @@ function respond(raw){
   for(const pat of calcPats){const m=calcMsg.match(pat);if(m){try{const r=safeCalc(m[1]);return`🧮 **${esc(m[1].trim())}** = **${r}**`;}catch(_){}}}
 
   // Greetings
-  for(const[k,arr]of Object.entries(GREETINGS)){const re=new RegExp(`\\b${k}\\b`,'i');if(re.test(msg)&&msg.replace(re,'').trim().length<5)return pick(arr);}
+  for(const[k,arr]of Object.entries(GREETINGS)){const re=new RegExp(`\\b${k}\\b`,'i');if(re.test(msg)){const remaining=msg.replace(re,'').trim().toLowerCase();if(remaining.length<5||/^(how|what|who|where|when|why|are|you|doing|up|is|was|were|it|this|that|there|here|good|bad|ok|okay|thanks|thank|please|yes|no|maybe|sure|alright|cool|great|awesome|nice|fine|well|so|and|or|but|just|now|today|tonight|tomorrow|yesterday|morning|evening|afternoon|night|day|week|month|year|time|about|with|for|to|from|of|in|on|at|by|the|a|an)$/i.test(remaining))return pick(arr);}}
 
   // Knowledge base search
   if(userKB){
