@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ada – AI Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#2563eb;--accent-dark:#1d4ed8;--accent-muted:#dbeafe;
+  --bg:#fafafa;--surface:#ffffff;--surface2:#f4f4f5;
+  --border:#e4e4e7;--border2:#d4d4d8;
+  --text:#18181b;--muted:#71717a;--hint:#a1a1aa;
+  --user-bg:#2563eb;--ada-bg:#ffffff;
+  --code-bg:#18181b;--code-text:#e4e4e7;
+  --radius:10px;--radius-lg:14px;
+  --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --font:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono','Fira Code',monospace;
+}
+[data-theme="dark"]{
+  --bg:#09090b;--surface:#18181b;--surface2:#27272a;
+  --border:#3f3f46;--border2:#52525b;
+  --text:#fafafa;--muted:#a1a1aa;--hint:#71717a;
+  --user-bg:#2563eb;--ada-bg:#27272a;
+  --accent-muted:#1e3a6e;
+  --shadow:0 1px 4px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+}
+html{font-size:15px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.65;-webkit-font-smoothing:antialiased}
+
+/* ── Layout ── */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:transform .2s}
+.sidebar-top{padding:16px;border-bottom:1px solid var(--border)}
+.new-btn{width:100%;padding:10px 14px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font:500 13px var(--font);cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .15s}
+.new-btn:hover{background:var(--accent-dark)}
+.new-btn svg{width:14px;height:14px;flex-shrink:0}
+.conv-list{flex:1;overflow-y:auto;padding:8px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.conv-item{padding:10px 12px;border-radius:var(--radius);cursor:pointer;transition:background .12s;margin-bottom:2px;font-size:12.5px;color:var(--muted);line-height:1.4;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid transparent}
+.conv-item:hover{background:var(--surface2);color:var(--text)}
+.conv-item.active{background:var(--accent-muted);color:var(--accent);border-color:var(--accent-muted)}
+[data-theme="dark"] .conv-item.active{background:#1e3a6e;color:#93c5fd;border-color:#1e3a6e}
+.conv-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.conv-date{font-size:11px;color:var(--hint);flex-shrink:0}
+.conv-actions{display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.conv-item:hover .conv-actions{opacity:1}
+.conv-act-btn{background:none;border:none;cursor:pointer;padding:4px;border-radius:6px;color:var(--hint);font-size:13px;line-height:1;transition:all .12s}
+.conv-act-btn:hover{background:var(--border);color:var(--text)}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+header{display:flex;align-items:center;gap:14px;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo-mark{width:36px;height:36px;border-radius:9px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:16px;flex-shrink:0}
+.header-title{font-size:15px;font-weight:600;color:var(--text);line-height:1.1}
+.header-sub{font-size:11.5px;color:var(--muted);line-height:1}
+.hdr-btns{margin-left:auto;display:flex;align-items:center;gap:6px}
+.hdr-btn{width:34px;height:34px;border:1px solid var(--border);background:transparent;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;font-size:15px}
+.hdr-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+
+/* ── Chat ── */
+.chat-area{flex:1;overflow-y:auto;padding:28px 0;scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.chat-inner{max-width:720px;margin:0 auto;padding:0 24px;display:flex;flex-direction:column;gap:20px}
+
+/* ── Welcome ── */
+.welcome{padding:32px 0 16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.welcome-mark{width:64px;height:64px;border-radius:16px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:26px;margin-bottom:8px}
+.welcome h2{font-size:22px;font-weight:600;color:var(--text)}
+.welcome p{font-size:14px;color:var(--muted);max-width:420px;line-height:1.6}
+.chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:12px}
+.chip{padding:7px 14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:12.5px;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.chip:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ── Messages ── */
+.msg{display:flex;gap:10px;align-items:flex-start;max-width:88%}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg.ada{align-self:flex-start}
+.msg-av{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.msg-av.user-av{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.msg-body{display:flex;flex-direction:column;gap:5px;min-width:0}
+.bubble{padding:12px 16px;border-radius:var(--radius-lg);font-size:14.5px;line-height:1.65;word-break:break-word}
+.msg.ada .bubble{background:var(--ada-bg);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:4px;box-shadow:var(--shadow)}
+.msg.user .bubble{background:var(--user-bg);color:#fff;border-bottom-right-radius:4px}
+.msg-meta{font-size:11px;color:var(--hint);padding:0 4px}
+.msg.user .msg-meta{text-align:right}
+
+/* ── Reaction bar ── */
+.reaction-bar{display:flex;gap:4px;flex-wrap:wrap;opacity:0;transition:opacity .15s;margin-top:2px}
+.msg:hover .reaction-bar,.reaction-bar:focus-within{opacity:1}
+.react-btn{font-size:14px;cursor:pointer;padding:3px 6px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);transition:transform .1s;user-select:none;line-height:1}
+.react-btn:hover{transform:scale(1.15)}
+.reaction-chip{font-size:13px;cursor:pointer;padding:3px 8px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);user-select:none;line-height:1.4}
+.reactions{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+
+/* ── Code blocks ── */
+.code-wrap{background:var(--code-bg);border-radius:10px;margin:10px 0;overflow:hidden}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06)}
+.code-lang-badge{font-size:11px;color:#71717a;font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;font-weight:500}
+.copy-btn{padding:4px 10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:#a1a1aa;border-radius:5px;font-size:11.5px;cursor:pointer;transition:all .15s;font-family:var(--mono)}
+.copy-btn:hover{background:rgba(255,255,255,.14);color:#e4e4e7}
+.code-wrap pre{padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.6;color:var(--code-text);scrollbar-width:thin;scrollbar-color:#3f3f46 transparent}
+
+/* ── Typing indicator ── */
+.typing-wrap{display:flex;gap:10px;align-items:flex-start}
+.typing-bubble{padding:12px 18px;background:var(--ada-bg);border:1px solid var(--border);border-radius:var(--radius-lg);border-bottom-left-radius:4px;box-shadow:var(--shadow);display:flex;gap:5px;align-items:center}
+.typing-dot{width:7px;height:7px;background:var(--hint);border-radius:50%;animation:bounce 1.3s infinite}
+.typing-dot:nth-child(2){animation-delay:.18s}
+.typing-dot:nth-child(3){animation-delay:.36s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-6px);opacity:1}}
+
+/* ── Source pill ── */
+.source-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-size:11.5px;color:var(--muted);margin:8px 0 0}
+.source-pill span{font-weight:500;color:var(--accent)}
+
+/* ── Input area ── */
+.input-area{padding:16px 24px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.input-wrap{max-width:720px;margin:0 auto}
+.input-box{display:flex;gap:8px;align-items:flex-end;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:8px 8px 8px 16px;transition:border-color .15s}
+.input-box:focus-within{border-color:var(--accent)}
+textarea{flex:1;resize:none;border:none;background:transparent;font:14.5px/1.5 var(--font);outline:none;color:var(--text);min-height:24px;max-height:130px;overflow-y:auto;scrollbar-width:thin;padding:4px 0}
+textarea::placeholder{color:var(--hint)}
+.send-btn{width:36px;height:36px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.send-btn:hover{background:var(--accent-dark);transform:scale(1.04)}
+.send-btn:active{transform:scale(.97)}
+.send-btn svg{width:16px;height:16px}
+.input-hint{font-size:11.5px;color:var(--hint);margin-top:8px;text-align:center}
+
+/* ── Info card ── */
+.info-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-top:6px}
+.info-card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.info-row{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-size:13px}
+.info-row:last-child{border-bottom:none}
+.info-row .label{color:var(--muted)}
+.info-row .value{font-weight:500;color:var(--text);text-align:right}
+.info-tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11.5px;font-weight:500;background:var(--accent-muted);color:var(--accent);margin-right:4px}
+[data-theme="dark"] .info-tag{background:#1e3a6e;color:#93c5fd}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:all .25s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <button class="new-btn" onclick="newChat()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+        New conversation
+      </button>
+    </div>
+    <div class="conv-list" id="convList"></div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <header>
+      <div class="logo-wrap">
+        <div class="logo-mark">A</div>
+        <div>
+          <div class="header-title">Ada</div>
+          <div class="header-sub">AI Assistant</div>
+        </div>
+      </div>
+      <div class="hdr-btns">
+        <button class="hdr-btn" title="Toggle theme" onclick="toggleDark()" id="darkBtn">🌙</button>
+      </div>
+    </header>
+
+    <div class="chat-area" id="chatArea">
+      <div class="chat-inner" id="chatInner">
+        <div id="welcomeScreen" class="welcome">
+          <div class="welcome-mark">A</div>
+          <h2>Hi, I'm Ada</h2>
+          <p>Ask me anything — weather, math, translations, facts, code, crypto, space, and more.</p>
+          <div class="chips">
+            <span class="chip" onclick="qs('Weather in London')">🌤 Weather</span>
+            <span class="chip" onclick="qs('Calculate 15% of 240')">🧮 Math</span>
+            <span class="chip" onclick="qs('Translate hello to French')">🌐 Translate</span>
+            <span class="chip" onclick="qs('Write a Python hello world')">💻 Code</span>
+            <span class="chip" onclick="qs('What is quantum computing?')">🔍 Explain</span>
+            <span class="chip" onclick="qs('Tell me a fun fact')">✨ Fun fact</span>
+            <span class="chip" onclick="qs('Bitcoin price')">💰 Crypto</span>
+            <span class="chip" onclick="qs('Next SpaceX launch')">🚀 Space</span>
+            <span class="chip" onclick="qs('Show r/programming hot posts')">📱 Reddit</span>
+            <span class="chip" onclick="qs('Tell me a joke')">😄 Joke</span>
+            <span class="chip" onclick="qs('What is my IP?')">🌐 My IP</span>
+            <span class="chip" onclick="qs('Random dog picture')">🐶 Dog pic</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrap">
+        <div class="input-box">
+          <textarea id="msgInput" rows="1" placeholder="Ask Ada anything…" oninput="autoGrow(this)"></textarea>
+          <button class="send-btn" onclick="send()" title="Send">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="2" x2="6" y2="10"/><polyline points="14 2 9 14 6 10 2 7 14 2"/></svg>
+          </button>
+        </div>
+        <div class="input-hint">Enter to send · Shift+Enter for new line</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── State ── */
+let dark = false;
+let convs = [];
+let curId = null;
+const cache = { dict:{}, wiki:{}, book:{} };
+const EMOJIS = ['👍','❤️','😂','😮','🎉','🔥'];
+const KB_TOKEN = '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';
+const KB_REPO = 'TheAdaProject-ai/The-Ada-Project';
+let kb = {};
+
+/* ── Boot ── */
+document.getElementById('msgInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+if (localStorage.getItem('ada-dark') === '1') toggleDark();
+loadConvs();
+if (!curId) newChat();
+window.addEventListener('load', loadKB);
+
+/* ── Theme ── */
+function toggleDark() {
+  dark = !dark;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
+  document.getElementById('darkBtn').textContent = dark ? '☀️' : '🌙';
+  localStorage.setItem('ada-dark', dark ? '1' : '0');
+}
+
+/* ── Conversations ── */
+function loadConvs() {
+  const s = localStorage.getItem('ada-convs');
+  if (s) { convs = JSON.parse(s); renderConvs(); }
+}
+function saveConvs() { localStorage.setItem('ada-convs', JSON.stringify(convs)); }
+function renderConvs() {
+  const el = document.getElementById('convList');
+  if (!convs.length) { el.innerHTML = '<div style="padding:12px;font-size:12px;color:var(--hint);text-align:center">No conversations yet</div>'; return; }
+  el.innerHTML = convs.map(c => `
+    <div class="conv-item${c.id === curId ? ' active' : ''}" onclick="loadConv('${c.id}')">
+      <div class="conv-title">${esc(c.title || 'New conversation')}</div>
+      <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+        <div class="conv-date">${fmtDate(c.date)}</div>
+        <div class="conv-actions">
+          <button class="conv-act-btn" title="Download" onclick="event.stopPropagation();dlConv('${c.id}')">⬇</button>
+          <button class="conv-act-btn" title="Delete" onclick="event.stopPropagation();delConv('${c.id}')">✕</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function fmtDate(iso) {
+  const d = new Date(iso), now = new Date();
+  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString([],{month:'short',day:'numeric'});
+}
+function newChat() {
+  curId = Date.now().toString();
+  convs.unshift({ id: curId, title: 'New conversation', date: new Date().toISOString(), msgs: [] });
+  saveConvs(); renderConvs();
+  document.getElementById('chatInner').innerHTML = '';
+  showWelcome();
+}
+function loadConv(id) {
+  curId = id;
+  const c = convs.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('chatInner').innerHTML = '';
+  hideWelcome();
+  c.msgs.forEach(m => appendMsg(m.text, m.role, false));
+  renderConvs();
+  scrollBot();
+}
+function saveMsg(text, role) {
+  if (!curId) newChat();
+  const c = convs.find(x => x.id === curId);
+  if (c) {
+    c.msgs.push({ text, role });
+    if (c.msgs.length === 1 || c.title === 'New conversation') c.title = text.slice(0, 38) + (text.length > 38 ? '…' : '');
+    saveConvs(); renderConvs();
+  }
+}
+function delConv(id) {
+  convs = convs.filter(x => x.id !== id);
+  saveConvs();
+  if (curId === id) { curId = null; newChat(); } else renderConvs();
+}
+function dlConv(id) {
+  const c = convs.find(x => x.id === id);
+  if (!c) return;
+  let txt = `Ada Conversation: ${c.title}\nDate: ${new Date(c.date).toLocaleString()}\n${'─'.repeat(40)}\n\n`;
+  c.msgs.forEach(m => { txt += `[${m.role === 'ada' ? 'Ada' : 'You'}]: ${m.text}\n\n`; });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' }));
+  a.download = `ada-${c.title.replace(/[^a-z0-9]/gi,'-')}.txt`;
+  a.click();
+}
+
+/* ── KB ── */
+async function loadKB() {
+  try {
+    const [owner, repo] = KB_REPO.split('/');
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/Basic-knowledge/`, { headers: { Accept: 'application/vnd.github.v3+json', Authorization: `token ${KB_TOKEN}` } });
+    if (!r.ok) return;
+    const files = await r.json();
+    for (const f of files) {
+      if (f.type === 'file' && /\.(md|txt|json)$/.test(f.name)) {
+        const res = await fetch(f.download_url || f.url);
+        if (res.ok) kb[f.name] = await res.text();
+      }
+    }
+  } catch (_) {}
+}
+
+/* ── Send ── */
+async function send() {
+  const inp = document.getElementById('msgInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  hideWelcome();
+  appendMsg(text, 'user');
+  saveMsg(text, 'user');
+  inp.value = ''; inp.style.height = 'auto';
+  const tyEl = appendTyping();
+  try {
+    const reply = await respond(text);
+    tyEl.remove();
+    appendMsg(reply, 'ada');
+    saveMsg(reply, 'ada');
+  } catch (e) {
+    tyEl.remove();
+    appendMsg('Something went wrong — please try again.', 'ada');
+  }
+}
+function qs(t) { document.getElementById('msgInput').value = t; send(); }
+
+/* ── Render ── */
+function showWelcome() {
+  const ci = document.getElementById('chatInner');
+  if (!ci.querySelector('#welcomeScreen')) {
+    ci.innerHTML = `<div id="welcomeScreen" class="welcome">
+      <div class="welcome-mark">A</div>
+      <h2>Hi, I'm Ada</h2>
+      <p>Ask me anything — weather, math, translations, facts, code, crypto, space, and more.</p>
+      <div class="chips">
+        <span class="chip" onclick="qs('Weather in London')">🌤 Weather</span>
+        <span class="chip" onclick="qs('Calculate 15% of 240')">🧮 Math</span>
+        <span class="chip" onclick="qs('Translate hello to French')">🌐 Translate</span>
+        <span class="chip" onclick="qs('Write a Python hello world')">💻 Code</span>
+        <span class="chip" onclick="qs('What is quantum computing?')">🔍 Explain</span>
+        <span class="chip" onclick="qs('Tell me a fun fact')">✨ Fun fact</span>
+        <span class="chip" onclick="qs('Bitcoin price')">💰 Crypto</span>
+        <span class="chip" onclick="qs('Next SpaceX launch')">🚀 Space</span>
+        <span class="chip" onclick="qs('Show r/programming hot posts')">📱 Reddit</span>
+        <span class="chip" onclick="qs('Tell me a joke')">😄 Joke</span>
+        <span class="chip" onclick="qs('What is my IP?')">🌐 My IP</span>
+        <span class="chip" onclick="qs('Random dog picture')">🐶 Dog pic</span>
+      </div>
+    </div>`;
+  }
+}
+function hideWelcome() {
+  const w = document.getElementById('welcomeScreen');
+  if (w) w.remove();
+}
+function appendMsg(text, role, doScroll = true) {
+  const ci = document.getElementById('chatInner');
+  const wrap = document.createElement('div');
+  wrap.className = `msg ${role}`;
+  const av = document.createElement('div');
+  av.className = role === 'ada' ? 'msg-av' : 'msg-av user-av';
+  av.textContent = role === 'ada' ? 'A' : 'U';
+  const body = document.createElement('div');
+  body.className = 'msg-body';
+  const bub = document.createElement('div');
+  bub.className = 'bubble';
+  if (role === 'ada') bub.innerHTML = renderMarkdown(text);
+  else bub.textContent = text;
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  body.appendChild(bub);
+  body.appendChild(meta);
+  if (role === 'ada') {
+    const rbar = document.createElement('div');
+    rbar.className = 'reaction-bar';
+    const reactRow = document.createElement('div');
+    reactRow.className = 'reactions';
+    EMOJIS.forEach(emoji => {
+      const b = document.createElement('span');
+      b.className = 'react-btn'; b.textContent = emoji;
+      b.onclick = () => {
+        const ex = reactRow.querySelector(`[data-e="${emoji}"]`);
+        if (ex) { const n = +ex.dataset.n + 1; ex.textContent = `${emoji} ${n}`; ex.dataset.n = n; }
+        else { const c = document.createElement('span'); c.className = 'reaction-chip'; c.textContent = emoji; c.dataset.e = emoji; c.dataset.n = 1; c.onclick = () => c.remove(); reactRow.appendChild(c); }
+        rbar.style.opacity = '0';
+      };
+      rbar.appendChild(b);
+    });
+    body.appendChild(rbar);
+    body.appendChild(reactRow);
+  }
+  wrap.appendChild(av);
+  wrap.appendChild(body);
+  ci.appendChild(wrap);
+  if (doScroll) scrollBot();
+}
+function appendTyping() {
+  const ci = document.getElementById('chatInner');
+  const w = document.createElement('div');
+  w.className = 'msg ada';
+  w.innerHTML = `<div class="msg-av">A</div><div class="msg-body"><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  ci.appendChild(w); scrollBot(); return w;
+}
+function scrollBot() {
+  const ca = document.getElementById('chatArea');
+  ca.scrollTop = ca.scrollHeight;
+}
+
+/* ── Markdown renderer ── */
+function renderMarkdown(text) {
+  // Code blocks
+  text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+    const id = 'cb' + Math.random().toString(36).slice(2);
+    const l = lang || 'code';
+    return `<div class="code-wrap"><div class="code-header"><span class="code-lang-badge">${esc(l)}</span><button class="copy-btn" onclick="cpCode('${id}')">Copy</button></div><pre id="${id}">${esc(code.trim())}</pre></div>`;
+  });
+  // Inline code
+  text = text.replace(/`([^`]+)`/g, '<code style="font-family:var(--mono);font-size:12.5px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 5px">$1</code>');
+  // Bold
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Info cards (structured output from APIs)
+  text = text.replace(/\[CARD\]([\s\S]*?)\[\/CARD\]/g, (_, inner) => `<div class="info-card">${inner}</div>`);
+  return text;
+}
+function cpCode(id) {
+  const el = document.getElementById(id);
+  if (el) navigator.clipboard.writeText(el.textContent).then(() => toast('✓ Copied to clipboard'));
+}
+
+/* ── Utils ── */
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function autoGrow(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 130) + 'px'; }
+let toastTimer;
+function toast(m) {
+  const el = document.getElementById('toast');
+  el.textContent = m; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+/* ── APIs ── */
+async function apiWeather(city) {
+  try {
+    const g = await (await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`)).json();
+    if (!g.results?.length) return null;
+    const { latitude: lat, longitude: lon, name, country } = g.results[0];
+    const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m,apparent_temperature,precipitation_probability&timezone=auto&forecast_days=1`)).json();
+    const cw = w.current_weather;
+    return { name, country, temp: Math.round(cw.temperature), wind: Math.round(cw.windspeed), code: cw.weathercode, hum: w.hourly?.relativehumidity_2m?.[0] ?? '—', feels: w.hourly?.apparent_temperature?.[0] != null ? Math.round(w.hourly.apparent_temperature[0]) : '—', rain: w.hourly?.precipitation_probability?.[0] ?? '—' };
+  } catch (_) { return null; }
+}
+const wIcon = c => c===0?'☀️':c<=2?'⛅':c<=3?'☁️':c<=49?'🌫️':c<=67?'🌧️':c<=77?'❄️':c<=82?'🌦️':c<=86?'🌨️':'⛈️';
+const wDesc = c => c===0?'Clear sky':c<=2?'Partly cloudy':c<=3?'Overcast':c<=49?'Foggy':c<=59?'Drizzle':c<=67?'Rain':c<=77?'Snow':c<=82?'Rain showers':c<=86?'Snow showers':'Thunderstorm';
+
+async function apiWiki(title) {
+  if (cache.wiki[title]) return cache.wiki[title];
+  try {
+    const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+    if (r.ok) { const d = await r.json(); if (d?.extract) { cache.wiki[title] = d; return d; } }
+  } catch (_) {}
+  return null;
+}
+async function searchWiki(q) {
+  try {
+    const r = await fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(q)}&limit=5&namespace=0&format=json&origin=*`);
+    if (r.ok) { const d = await r.json(); if (d?.[1]?.length) return { title: d[1][0] }; }
+  } catch (_) {}
+  return null;
+}
+async function apiDDG(q) {
+  try {
+    const r = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=0`);
+    if (r.ok) { const d = await r.json(); if (d.Abstract) return { extract: d.Abstract }; if (d.RelatedTopics?.[0]?.Text) return { extract: d.RelatedTopics[0].Text }; }
+  } catch (_) {}
+  return null;
+}
+async function apiBooks(q) {
+  if (cache.book[q]) return cache.book[q];
+  try {
+    const r = await fetch(`https://gutendex.com/books?search=${encodeURIComponent(q)}`);
+    if (r.ok) { const d = await r.json(); if (d.results?.length) { cache.book[q] = d.results; return d.results; } }
+  } catch (_) {}
+  return null;
+}
+async function apiDict(word) {
+  if (cache.dict[word]) return cache.dict[word];
+  try {
+    const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+    if (r.ok) { const d = await r.json(); cache.dict[word] = d; return d; }
+  } catch (_) {}
+  return null;
+}
+async function apiCountry(name) {
+  try { const r = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(name)}`); if (r.ok) { const d = await r.json(); return d?.[0] ?? null; } } catch (_) {} return null;
+}
+async function apiNASA(q) {
+  try { const r = await fetch(`https://images-api.nasa.gov/search?q=${encodeURIComponent(q)}&media_type=image`); if (r.ok) { const d = await r.json(); return d?.collection?.items?.slice(0, 3) ?? null; } } catch (_) {} return null;
+}
+async function apiSpaceX() {
+  try { const r = await fetch('https://api.spacexdata.com/v4/launches/upcoming'); if (r.ok) { const d = await r.json(); return d?.slice(0, 3); } } catch (_) {} return null;
+}
+async function apiCrypto(coin) {
+  try { const r = await fetch(`https://api.coingecko.com/api/v3/coins/${encodeURIComponent(coin)}`); if (r.ok) return await r.json(); } catch (_) {} return null;
+}
+async function apiReddit(sub) {
+  try {
+    const rss = `https://www.reddit.com/r/${encodeURIComponent(sub)}/hot/.rss`;
+    const r = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}`);
+    if (r.ok) { const d = await r.json(); return d?.items?.slice(0, 5).map(i => ({ title: i.title, author: i.author, link: i.link })) ?? null; }
+  } catch (_) {} return null;
+}
+async function apiDog() { try { const r = await fetch('https://dog.ceo/api/breeds/image/random'); if (r.ok) { const d = await r.json(); return d.message; } } catch (_) {} return null; }
+async function apiCatFact() { try { const r = await fetch('https://catfact.ninja/fact'); if (r.ok) { const d = await r.json(); return d.fact; } } catch (_) {} return null; }
+async function apiJoke() { try { const r = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,racist,sexist,explicit'); if (r.ok) { const d = await r.json(); return d.type === 'single' ? d.joke : `${d.setup}\n\n${d.delivery}`; } } catch (_) {} return null; }
+async function apiIP() { try { const r = await fetch('https://ipapi.co/json/'); if (r.ok) return await r.json(); } catch (_) {} return null; }
+async function apiExchange(from, to, amount) { try { const r = await fetch(`https://api.frankfurter.app/latest?amount=${amount}&from=${from}&to=${to}`); if (r.ok) { const d = await r.json(); return d.rates?.[to] ?? null; } } catch (_) {} return null; }
+async function apiFood(q) { try { const r = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=1`); if (r.ok) { const d = await r.json(); return d.products?.[0] ?? null; } } catch (_) {} return null; }
+async function apiUnis(country) { try { const r = await fetch(`http://universities.hipolabs.com/search?country=${encodeURIComponent(country)}`); if (r.ok) { const d = await r.json(); return d.slice(0, 5); } } catch (_) {} return null; }
+
+/* ── Calculator ── */
+function calc(input) {
+  let e = input.toLowerCase().trim();
+  const pct = e.match(/^([\d.]+)\s*%\s*of\s*([\d.]+)$/);
+  if (pct) return parseFloat(pct[1]) / 100 * parseFloat(pct[2]);
+  e = e.replace(/\bsqrt\b/g,'Math.sqrt').replace(/\babs\b/g,'Math.abs').replace(/\bsin\b/g,'Math.sin').replace(/\bcos\b/g,'Math.cos').replace(/\btan\b/g,'Math.tan').replace(/\bpi\b/g,'Math.PI').replace(/\be\b/g,'Math.E').replace(/\blog\b/g,'Math.log10').replace(/\bln\b/g,'Math.log').replace(/\bfloor\b/g,'Math.floor').replace(/\bceil\b/g,'Math.ceil').replace(/\bround\b/g,'Math.round').replace(/\^/g,'**').replace(/×/g,'*').replace(/÷/g,'/').replace(/[^0-9+\-*/.(),%\sMathsqrtabcilognudEeP]/g,'');
+  const r = Function('"use strict";return(' + e + ')')();
+  if (typeof r !== 'number' || !isFinite(r)) throw new Error('bad');
+  return Math.round(r * 1e10) / 1e10;
+}
+
+/* ── Typo correction ── */
+const TYPOS = {"helo":"hello","heloo":"hello","hii":"hi","thnks":"thanks","thankyou":"thank you","thank u":"thank you","thx":"thanks","ty":"thank you","plz":"please","pls":"please","wats":"what's","wat":"what","wut":"what","u":"you","ur":"your","ya":"you","gud":"good","gr8":"great","sory":"sorry","srry":"sorry","cant":"can't","dont":"don't","didnt":"didn't","doesnt":"doesn't","isnt":"isn't","teh":"the","adn":"and","becuase":"because","im":"i'm"};
+function fixTypos(t) { let o = t; for (const [k, v] of Object.entries(TYPOS)) o = o.replace(new RegExp(`\\b${k.replace(/'/g,"\\'")}\\b`, 'gi'), v); return o; }
+
+/* ── Static data ── */
+const GREETINGS = {'hi':["Hello! How can I help?","Hi there! What's on your mind?"],'hello':["Hi! Great to see you.","Hello! What would you like to know?"],'hey':["Hey! What can I do for you?"],'how are you':["Doing great, thanks for asking! How about you? 😊"],'wassup':["Hey! What's up? 😊"],'sup':["Hey! What's up?"],"what's up":["Hey! 😊 What can I do for you?"],'good morning':["Good morning! ☀️ Hope your day is great."],'good night':["Good night! 🌙 Sleep well."],'bye':["Goodbye! Take care! 👋"],'thank you':["You're welcome! 😊 Anything else?"],'thanks':["Anytime! 😊"],'what can you do':["I can help with weather 🌤️, math 🧮, translations 🌐, facts, crypto 💰, SpaceX 🚀, Reddit 📱, jokes 😄, food nutrition, currency exchange, and more. Just ask!"]};
+const FACTS = ["🦊 A group of flamingos is called a 'flamboyance'.","🍯 Honey never spoils — 3,000-year-old honey was found in Egyptian tombs.","🌊 The ocean produces over 50% of Earth's oxygen.","🐙 Octopuses have three hearts and blue blood.","🌙 A day on Venus is longer than a year on Venus.","🐘 Elephants are the only animals that can't jump.","⚡ Lightning strikes Earth about 100 times per second.","🦋 Butterflies taste with their feet.","🔢 There are more possible chess games than atoms in the observable universe.","🧠 Your brain generates about 20 watts — enough to power a dim light bulb.","🐝 Bees can recognize human faces.","🦈 Sharks are older than trees — they've existed for over 400 million years.","🌌 There are more stars in the universe than grains of sand on all Earth's beaches."];
+const ASTRO_MAP = {'biggest planet':'Jupiter (planet)','largest planet':'Jupiter (planet)','smallest planet':'Mercury (planet)','hottest planet':'Venus (planet)','coldest planet':'Neptune (planet)','red planet':'Mars (planet)'};
+const LANG_MAP = {french:'fr',spanish:'es',german:'de',italian:'it',portuguese:'pt',japanese:'ja',chinese:'zh',russian:'ru',arabic:'ar',korean:'ko',dutch:'nl',polish:'pl',turkish:'tr',hindi:'hi',swedish:'sv',ukrainian:'uk',finnish:'fi',norwegian:'no',danish:'da',greek:'el',hebrew:'he',czech:'cs',romanian:'ro',hungarian:'hu',thai:'th',vietnamese:'vi',indonesian:'id'};
+const LANG_NAMES = {fr:'French',es:'Spanish',de:'German',it:'Italian',pt:'Portuguese',ja:'Japanese',zh:'Chinese',ru:'Russian',ar:'Arabic',ko:'Korean',nl:'Dutch',pl:'Polish',tr:'Turkish',hi:'Hindi',sv:'Swedish',uk:'Ukrainian',fi:'Finnish',no:'Norwegian',da:'Danish',el:'Greek',he:'Hebrew',cs:'Czech',ro:'Romanian',hu:'Hungarian',th:'Thai',vi:'Vietnamese',id:'Indonesian'};
+
+/* ── Format Wikipedia ── */
+function fmtWiki(extract, title) {
+  const abbrs = ['U.S.','U.K.','Dr.','Mr.','Mrs.','Ms.','Prof.','Sr.','Jr.','etc.','e.g.','i.e.'];
+  let tmp = extract; const ph = {};
+  abbrs.forEach((a, i) => { const k = `__A${i}__`; ph[k] = a; tmp = tmp.replace(new RegExp(a.replace(/\./g,'\\.'), 'g'), k); });
+  let sents = (tmp.match(/[^.!?]+[.!?]+/g) || [tmp]).map(s => { for (const [k,v] of Object.entries(ph)) s = s.replace(new RegExp(k,'g'), v); return s.trim(); }).filter(Boolean);
+  if (!sents.length) return esc(extract);
+  let out = `<strong>${esc(sents[0])}</strong>`;
+  if (sents.length > 1) {
+    out += '<br><br>';
+    for (let i = 1; i < Math.min(sents.length, 5); i++) out += `• ${esc(sents[i])}<br>`;
+  }
+  if (title) out += `<br><span class="source-pill">📖 Source: <span>Wikipedia — ${esc(title)}</span></span>`;
+  return out;
+}
+
+/* ── Format structured card ── */
+function card(title, icon, rows) {
+  let html = `[CARD]<div class="info-card-title">${icon} ${esc(title)}</div>`;
+  rows.forEach(([label, value]) => { html += `<div class="info-row"><span class="label">${esc(label)}</span><span class="value">${value}</span></div>`; });
+  html += '[/CARD]';
+  return html;
+}
+
+/* ── Main response engine ── */
+async function respond(raw) {
+  if (!raw.trim()) return "I didn't catch that — could you say it again?";
+  let msg = fixTypos(raw.toLowerCase().trim());
+
+  // Fun facts
+  if (/fun fact|random fact|tell me a fact|surprise me/.test(msg)) return pick(FACTS);
+
+  // Jokes
+  if (/\bjoke\b|make me laugh|something funny/.test(msg)) {
+    const j = await apiJoke();
+    if (j) return `😄 ${j.replace(/\n/g, '<br><br>')}`;
+  }
+
+  // Dog picture
+  if (/\bdog\b/.test(msg) && /picture|photo|image|show|random/.test(msg)) {
+    const url = await apiDog();
+    if (url) return `🐶 Here's a random dog!<br><br><img src="${url}" alt="Random dog" style="max-width:100%;border-radius:10px;margin-top:4px">`;
+  }
+
+  // Cat fact
+  if (/cat fact|cat.*fact/.test(msg)) {
+    const f = await apiCatFact();
+    if (f) return `🐱 **Cat fact:** ${esc(f)}`;
+  }
+
+  // IP
+  if (/my ip|ip address|what is my ip/.test(msg)) {
+    const ip = await apiIP();
+    if (ip) return card('Your IP', '🌐', [['IP Address', esc(ip.ip)], ['City', esc(ip.city||'—')], ['Region', esc(ip.region||'—')], ['Country', esc(ip.country_name||'—')], ['ISP', esc(ip.org||'—')]]);
+  }
+
+  // Currency conversion
+  const exM = msg.match(/([\d.]+)\s+([a-z]{3})\s+(?:to|in)\s+([a-z]{3})/i);
+  if (exM) {
+    const [, amt, from, to] = exM;
+    const result = await apiExchange(from.toUpperCase(), to.toUpperCase(), parseFloat(amt));
+    if (result != null) return `💱 **${amt} ${from.toUpperCase()}** = **${result.toFixed(2)} ${to.toUpperCase()}**`;
+  }
+
+  // Weather
+  const wM = msg.match(/weather\s+(?:in|for|at)?\s*(.+)/);
+  if (wM) {
+    const city = wM[1].replace(/[?.!]/g,'').trim();
+    if (city.length > 1) {
+      const w = await apiWeather(city);
+      if (w) return card(`${w.name}, ${w.country}`, wIcon(w.code), [
+        ['Conditions', `${wIcon(w.code)} ${wDesc(w.code)}`],
+        ['Temperature', `${w.temp}°C`],
+        ['Feels like', `${w.feels}°C`],
+        ['Wind', `${w.wind} km/h`],
+        ['Humidity', `${w.hum}%`],
+        ['Rain chance', `${w.rain}%`],
+      ]);
+    }
+  }
+
+  // Calculator
+  let calcMsg = msg.replace(/\bplus\b/gi,'+').replace(/\bminus\b/gi,'-').replace(/\btimes\b/gi,'*').replace(/\bmultiply\b/gi,'*').replace(/\bdivided by\b/gi,'/').replace(/\bto the power of\b/gi,'^').replace(/\bsquare root of\b/gi,'sqrt').replace(/\bsqrt of\b/gi,'sqrt');
+  const calcPats = [
+    /(?:calculate|compute|what(?:'s|\s+is)\s+(?:the\s+result\s+of\s+)?)([\d\s\+\-\*\/\^\(\)\.sqrtabcilognudEePi×÷]+(?:\s*%\s*of\s*[\d.]+)?)/i,
+    /^([\d][\d\s\+\-\*\/\^\(\)\.sqrtabcilognudEePi×÷]+(?:\s*%\s*of\s*[\d.]+)?)\s*=?\s*\??$/i,
+    /([\d.]+\s*%\s*of\s*[\d.]+)/i
+  ];
+  for (const pat of calcPats) {
+    const m = calcMsg.match(pat);
+    if (m) { try { const res = calc(m[1]); return `🧮 **${esc(msg.trim())}** = **${esc(String(res))}**`; } catch (_) {} }
+  }
+
+  // Translation
+  const tM = msg.match(/translate\s+"?(.+?)"?\s+(?:to|into)\s+(\w+)/i);
+  if (tM) {
+    const [, tText, tLang] = tM;
+    const code = LANG_MAP[tLang.toLowerCase()];
+    if (code) {
+      try {
+        const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(tText)}&langpair=en|${code}`);
+        const d = await r.json();
+        const t = d.responseData?.translatedText;
+        if (t && d.responseStatus === 200) return `🌐 **${LANG_NAMES[code] || tLang}:** ${esc(t)}`;
+      } catch (_) {}
+    }
+  }
+
+  // Greetings
+  for (const [k, arr] of Object.entries(GREETINGS)) {
+    const re = new RegExp(`\\b${k}\\b`, 'i');
+    if (re.test(msg) && msg.replace(re,'').trim().length < 5) return pick(arr);
+  }
+
+  // KB search
+  if (Object.keys(kb).length > 0) {
+    const words = msg.split(' ').filter(w => w.length > 4);
+    for (const word of words) {
+      for (const [fname, content] of Object.entries(kb)) {
+        if (content.toLowerCase().includes(word)) {
+          const idx = content.toLowerCase().indexOf(word);
+          const snip = content.substring(Math.max(0, idx-80), idx+220).trim();
+          if (snip.length > 30) return `📚 From my knowledge base:\n\n${esc(snip)}\n\n<span class="source-pill">📁 Source: <span>${esc(fname)}</span></span>`;
+        }
+      }
+    }
+  }
+
+  // Books
+  if (/\b(book|books|novel|author)\b/.test(msg)) {
+    const q = msg.replace(/\b(book|books|novel|author)\b/gi,'').trim();
+    if (q.length > 2) {
+      const books = await apiBooks(q);
+      if (books?.length) {
+        const b = books[0];
+        return card(`📖 ${esc(b.title || 'Unknown')}`, '📚', [
+          ['Author', esc(b.authors?.[0]?.name || 'Unknown')],
+          ['Downloads', (b.download_count || 0).toLocaleString() + ' (Gutenberg)'],
+          ['Subjects', esc((b.subjects?.slice(0,2) || []).join(', ') || '—')],
+        ]);
+      }
+    }
+  }
+
+  // Countries
+  if (/population of|capital of|flag of|country/.test(msg)) {
+    let country = msg.replace(/\b(population of|flag of|capital of|country|population|flag|the|a|an|in|of|for|about|what is|what's|show me|tell me)\b/gi,'').trim();
+    if (country.length > 2) {
+      const c = await apiCountry(country);
+      if (c) {
+        const name = c.name?.common || country;
+        const pop = c.population?.toLocaleString() || 'Unknown';
+        const cap = (c.capital || ['Unknown'])[0];
+        const region = c.region || 'Unknown';
+        const cur = Object.values(c.currencies || {})[0]?.name || 'Unknown';
+        const lang = Object.values(c.languages || {})[0] || 'Unknown';
+        const flag = c.flag || '';
+        return card(`${flag} ${esc(name)}`, '🌍', [
+          ['Population', pop],
+          ['Capital', esc(cap)],
+          ['Region', esc(region)],
+          ['Currency', esc(cur)],
+          ['Language', esc(lang)],
+        ]);
+      }
+    }
+  }
+
+  // Universities
+  const uniM = msg.match(/universities?\s+(?:in|of)\s+(.+)/i);
+  if (uniM) {
+    const unis = await apiUnis(uniM[1].trim());
+    if (unis?.length) {
+      let html = `🎓 **Universities in ${esc(uniM[1].trim())}**<br><br>`;
+      unis.forEach(u => { html += `• **${esc(u.name)}**${u.web_pages?.[0] ? `<br>&nbsp;&nbsp;<a href="${esc(u.web_pages[0])}" target="_blank" style="color:var(--accent);font-size:12.5px">${esc(u.web_pages[0])}</a>` : ''}<br>`; });
+      return html;
+    }
+  }
+
+  // NASA / Space
+  if (/\bnasa\b|space|astronomy|galaxy/.test(msg)) {
+    const q = msg.replace(/\b(nasa|space|astronomy|galaxy|show me|about|images|photos)\b/gi,' ').trim();
+    const results = await apiNASA(q || 'universe');
+    if (results?.length) {
+      let html = `🚀 **NASA Images**<br><br>`;
+      results.forEach(r => {
+        const title = r.data?.[0]?.title || 'No title';
+        const desc = r.data?.[0]?.description?.substring(0, 100) || '';
+        html += `• **${esc(title)}**<br>&nbsp;&nbsp;${esc(desc)}…<br><br>`;
+      });
+      return html;
+    }
+  }
+
+  // SpaceX
+  if (/spacex|rocket launch/.test(msg)) {
+    const launches = await apiSpaceX();
+    if (launches?.length) {
+      const rows = launches.map(l => [esc(l.name||'Unknown'), l.date_local ? new Date(l.date_local).toLocaleDateString() : 'TBD']);
+      return card('Upcoming SpaceX Launches', '🚀', rows);
+    }
+  }
+
+  // Crypto
+  if (/bitcoin|btc|ethereum|eth|dogecoin|doge|litecoin|crypto/.test(msg)) {
+    let coin = 'bitcoin';
+    if (/ethereum|eth/.test(msg)) coin = 'ethereum';
+    else if (/doge/.test(msg)) coin = 'dogecoin';
+    else if (/litecoin/.test(msg)) coin = 'litecoin';
+    const data = await apiCrypto(coin);
+    if (data) {
+      const price = data.market_data?.current_price?.usd?.toLocaleString('en-US',{style:'currency',currency:'USD'}) || 'Unknown';
+      const change = (data.market_data?.price_change_percentage_24h || 0).toFixed(2);
+      const cap = data.market_data?.market_cap?.usd?.toLocaleString('en-US',{style:'currency',currency:'USD',notation:'compact'}) || '—';
+      const hi = data.market_data?.high_24h?.usd?.toLocaleString('en-US',{style:'currency',currency:'USD'}) || '—';
+      const lo = data.market_data?.low_24h?.usd?.toLocaleString('en-US',{style:'currency',currency:'USD'}) || '—';
+      return card(`${data.name || coin}`, parseFloat(change) >= 0 ? '📈' : '📉', [
+        ['Price (USD)', price],
+        ['24h Change', `${parseFloat(change) >= 0 ? '+' : ''}${change}%`],
+        ['24h High', hi],
+        ['24h Low', lo],
+        ['Market Cap', cap],
+      ]);
+    }
+  }
+
+  // Reddit
+  if (/reddit|r\//.test(msg)) {
+    const sub = msg.replace(/\b(reddit|r\/|show me|tell me|about|posts|from|hot)\b/gi,'').trim().replace(/\s+/g,'') || 'programming';
+    const posts = await apiReddit(sub);
+    if (posts?.length) {
+      let html = `📱 **r/${esc(sub)} — Hot Posts**<br><br>`;
+      posts.forEach(p => { html += `• <a href="${esc(p.link)}" target="_blank" style="color:var(--accent);font-weight:500">${esc(p.title)}</a><br>`; });
+      return html;
+    }
+  }
+
+  // Food nutrition
+  const foodM = msg.match(/(?:nutrition|calories|food info)\s+(?:for|of|in)?\s+(.+)/i);
+  if (foodM) {
+    const food = await apiFood(foodM[1].trim());
+    if (food) {
+      const name = food.product_name || foodM[1];
+      return card(`${esc(name)} (per 100g)`, '🥗', [
+        ['Calories', (food.nutriments?.['energy-kcal_100g']?.toFixed(0) || '—') + ' kcal'],
+        ['Fat', (food.nutriments?.fat_100g?.toFixed(1) || '—') + 'g'],
+        ['Carbs', (food.nutriments?.carbohydrates_100g?.toFixed(1) || '—') + 'g'],
+        ['Protein', (food.nutriments?.proteins_100g?.toFixed(1) || '—') + 'g'],
+      ]);
+    }
+  }
+
+  // Wikipedia Q&A
+  const Q_PATS = ['what is','what are','what was','what were','who is','who are','who was','who were','where is','where are','when is','when was','why is','why was','how is','how was','tell me about','explain','describe','define'];
+  if (Q_PATS.some(p => msg.includes(p))) {
+    let topic = msg;
+    for (const p of Q_PATS) { if (msg.includes(p)) { topic = msg.replace(p,'').trim(); break; } }
+    topic = topic.replace(/[?!.]/g,'').replace(/^(the |a |an )/i,'').trim();
+    topic = fixTypos(topic);
+    for (const [k, v] of Object.entries(ASTRO_MAP)) { if (topic.includes(k)) { topic = v; break; } }
+    if (topic.length > 2) {
+      let wiki = await apiWiki(topic);
+      if (!wiki) { const sr = await searchWiki(topic); if (sr?.title) wiki = await apiWiki(sr.title); }
+      if (!wiki) { const ddg = await apiDDG(topic); if (ddg) wiki = { extract: ddg.extract }; }
+      if (wiki?.extract) return fmtWiki(wiki.extract, wiki.title || topic);
+    }
+  }
+
+  // Dictionary fallback
+  const COMMON = new Set(['hi','hey','hello','how','what','why','when','where','are','you','doing','can','help','the','a','an','is','was','were','been','have','has','had','do','does','did','will','would','could','should','may','might','must','to','for','of','in','on','at','by','with','from','about','tell','just','very','too','also','some','more','then','than','only','not','but','and','or','so','if']);
+  const isConv = msg.length < 18 || msg.includes('?') || /^(hi|hey|hello|what|why|when|where|who|can|could|tell|show|help|explain)/i.test(msg);
+  if (!isConv) {
+    const words = msg.split(/\s+/).filter(w => w.length > 3 && !COMMON.has(w.replace(/[^a-z]/g,'')));
+    if (words.length) {
+      const w = words[0].replace(/[^a-z]/g,'');
+      const data = await apiDict(w);
+      const def = data?.[0]?.meanings?.[0]?.definitions?.[0]?.definition;
+      if (def && def.length > 20) return `📖 **${esc(w)}:** ${esc(def)}`;
+    }
+  }
+
+  // Fallback responses
+  return pick([
+    "I'm not sure I understand — could you rephrase that? 🤔",
+    "That's interesting. Could you give me a bit more context?",
+    "I can help with weather 🌤️, math 🧮, translations 🌐, facts, crypto 💰, and much more. What do you need?",
+    "Could you be more specific? I'd love to help! 😊"
+  ]);
+}
+</script>
+</body>
+</html>
